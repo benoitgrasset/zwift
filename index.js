@@ -7,50 +7,50 @@ const xmlString = `
   <durationType>time</durationType>
   <tags/>
   <workout>
-  <SteadyState Duration="8" Power="156" pace="0" />
-  <SteadyState Duration="3" Power="220" pace="0" />
-  <SteadyState Duration="2" Power="270" pace="0" />
-  <SteadyState Duration="1" Power="300" pace="0" />
-  <SteadyState Duration="1" Power="350" pace="0" />
-  <SteadyState Duration="3.5" Power="190" pace="0" />
-  <SteadyState Duration="4.5" Power="230" pace="0" />
-  <SteadyState Duration="2" Power="175" pace="0" />
-  <SteadyState Duration="2" Power="280" pace="0" />
-  <SteadyState Duration="6" Power="260" pace="0" />
-  <SteadyState Duration="2" Power="175" pace="0" />
-  <SteadyState Duration="2" Power="280" pace="0" />
-  <SteadyState Duration="6" Power="260" pace="0" />
-  <SteadyState Duration="2" Power="175" pace="0" />
-  <SteadyState Duration="2" Power="280" pace="0" />
-  <SteadyState Duration="6" Power="260" pace="0" />
-  <SteadyState Duration="2" Power="175" pace="0" />
-  <SteadyState Duration="2" Power="280" pace="0" />
-  <SteadyState Duration="6" Power="260" pace="0" />
-  <SteadyState Duration="2" Power="175" pace="0" />
-  <SteadyState Duration="1" Power="330" pace="0" />
-  <SteadyState Duration="3" Power="220" pace="0" />
-  <SteadyState Duration="1" Power="330" pace="0" />
-  <SteadyState Duration="3" Power="220" pace="0" />
-  <SteadyState Duration="1" Power="330" pace="0" />
-  <SteadyState Duration="3" Power="220" pace="0" />
-  <SteadyState Duration="1" Power="330" pace="0" />
-  <SteadyState Duration="3" Power="220" pace="0" />
-  <SteadyState Duration="1" Power="330" pace="0" />
-  <SteadyState Duration="3" Power="220" pace="0" />
+    <SteadyState Duration="480" Power="0.5" pace="0"/>
+    <SteadyState Duration="180" Power="0.7" pace="0"/>
+    <SteadyState Duration="120" Power="0.85" pace="0"/>
+    <SteadyState Duration="60" Power="0.95" pace="0"/>
+    <SteadyState Duration="60" Power="0.95" pace="0"/>
+    <SteadyState Duration="180" Power="0.6" pace="0"/>
+    <SteadyState Duration="300" Power="0.9" pace="0"/>
+    <SteadyState Duration="180" Power="0.75" pace="0"/>
+    <SteadyState Duration="120" Power="0.5" pace="0"/>
+    <SteadyState Duration="300" Power="0.9" pace="0"/>
+    <SteadyState Duration="180" Power="0.75" pace="0"/>
+    <SteadyState Duration="120" Power="0.5" pace="0"/>
+    <SteadyState Duration="300" Power="0.9" pace="0"/>
+    <SteadyState Duration="180" Power="0.75" pace="0"/>
+    <SteadyState Duration="120" Power="0.5" pace="0"/>
+    <SteadyState Duration="300" Power="0.9" pace="0"/>
+    <SteadyState Duration="180" Power="0.75" pace="0"/>
+    <SteadyState Duration="120" Power="0.5" pace="0"/>
+    <SteadyState Duration="300" Power="0.9" pace="0"/>
+    <SteadyState Duration="180" Power="0.75" pace="0"/>
+    <SteadyState Duration="120" Power="0.5" pace="0"/>
+    <SteadyState Duration="120" Power="0.604" pace="0"/>
+    <IntervalsT Repeat="3" OnDuration="30" OffDuration="120" OnPower="1.092" OffPower="0.804" pace="0"/>
+    <SteadyState Duration="60" Power="0.649" pace="0"/>
+    <Cooldown Duration="300" PowerLow="0.75" PowerHigh="0.25" pace="0"/>
   </workout>
   </workout_file>
 `;
 
+const todayDate = new Date().toLocaleDateString().replaceAll('/', '-');
+const newName = `New-Workout-${todayDate}`;
+
 const parser = new DOMParser();
 const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
 const durationElements = xmlDoc.querySelectorAll('[Duration]');
+const nameElement = xmlDoc.querySelector('name');
+nameElement.innerHTML = newName.toString();
 
 durationElements.forEach((element) => {
   const currentDuration = parseInt(element.getAttribute('Duration'), 10);
   const currentPower = parseInt(element.getAttribute('Power'), 10);
   const newDuration = currentDuration * 60;
   const newPower = Math.round((currentPower / 316) * 10) / 10;
-  const newPace = 0;
+  const newPace = 80;
   element.setAttribute('Duration', newDuration.toString());
   element.setAttribute('Power', newPower.toString());
   element.setAttribute('pace', newPace.toString());
