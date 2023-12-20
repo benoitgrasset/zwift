@@ -1,13 +1,31 @@
+import * as stylex from "@stylexjs/stylex";
 import { useState } from "react";
 import "./App.css";
+import { styles } from "./index.styles";
 
-const labelStyle = { margin: "0 5px" };
-const inputStyle = { width: "50px" };
+const _duration = 3;
+const _power = 180;
+const _pace = 80;
 
 const todayDate = new Date().toLocaleDateString().replaceAll("/", "-");
 
-function App() {
-  const [fields, setFields] = useState([{ duration: 0, power: 0, pace: 80 }]);
+const exportToCSV = (data: string, fileName: string) => {
+  const url = window.URL.createObjectURL(new Blob([data]));
+  const link = document.createElement("a");
+  link.href = url;
+  link.style.display = "none";
+  link.setAttribute("download", fileName);
+  document.body.appendChild(link);
+  link.click();
+  window.URL.revokeObjectURL(url);
+};
+
+const App = () => {
+  const [fields, setFields] = useState([
+    { duration: _duration, power: _power, pace: _pace },
+  ]);
+
+  const [xmlString, setXmlString] = useState("");
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -18,7 +36,7 @@ function App() {
         pace: field.pace,
       };
     });
-    const xmlString = `
+    const newXmlString = `
       <workout_file>
         <author/>
         <name>New-Workout-${todayDate}</name>
@@ -33,79 +51,96 @@ function App() {
         </workout>
         </workout_file>
 `;
-    console.log(xmlString);
+
+    exportToCSV(newXmlString, `New-Workout-${todayDate}.zwo`);
+    setXmlString(newXmlString);
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: "duration" | "pace" | "power",
+    index: number
+  ) => {
+    const newFields = [...fields];
+    newFields[index][field] = parseInt(e.target.value);
+    setFields(newFields);
   };
 
   return (
-    <form noValidate onSubmit={handleSubmit}>
+    <>
       <h1>Zwift ZWO Editor</h1>
-      {fields.map((field, index) => (
-        <div style={{ margin: "5px" }}>
-          <span>
-            <label style={labelStyle} htmlFor={`duration-${index}`}>
-              Duration (min)
-            </label>
-            <input
-              id={`duration-${index}`}
-              style={inputStyle}
-              type="text"
-              value={field.duration}
-              onChange={(e) => {
-                const newFields = [...fields];
-                newFields[index].duration = parseInt(e.target.value);
-                setFields(newFields);
-              }}
-            />
-          </span>
-          <span>
-            <label style={labelStyle} htmlFor={`power-${index}`}>
-              Power (Watts)
-            </label>
-            <input
-              id={`power-${index}`}
-              style={inputStyle}
-              type="text"
-              value={field.power}
-              onChange={(e) => {
-                const newFields = [...fields];
-                newFields[index].power = parseInt(e.target.value);
-                setFields(newFields);
-              }}
-            />
-          </span>
-          <span>
-            <label style={labelStyle} htmlFor={`pace-${index}`}>
-              Pace (RPM)
-            </label>
-            <input
-              id={`pace-${index}`}
-              style={inputStyle}
-              type="text"
-              value={field.pace}
-              onChange={(e) => {
-                const newFields = [...fields];
-                newFields[index].pace = parseInt(e.target.value);
-                setFields(newFields);
-              }}
-            />
-          </span>
-        </div>
-      ))}
-      <button
-        type="button"
-        onClick={() =>
-          setFields([...fields, { duration: 0, power: 0, pace: 0 }])
-        }
-      >
-        Add
-      </button>
-      <input
-        type="submit"
-        value="Submit"
-        style={{ display: "block", width: "100%", marginTop: "10px" }}
-      />
-    </form>
+      <div {...stylex.props(styles.root)}>
+        <form noValidate onSubmit={handleSubmit}>
+          {fields.map((field, index) => (
+            <div style={{ margin: "5px" }}>
+              <span>
+                <label
+                  {...stylex.props(styles.label)}
+                  htmlFor={`duration-${index}`}
+                >
+                  Duration (min)
+                </label>
+                <input
+                  id={`duration-${index}`}
+                  {...stylex.props(styles.input)}
+                  type="text"
+                  value={field.duration}
+                  onChange={(e) => handleChange(e, "duration", index)}
+                />
+              </span>
+              <span>
+                <label
+                  {...stylex.props(styles.label)}
+                  htmlFor={`power-${index}`}
+                >
+                  Power (Watts)
+                </label>
+                <input
+                  id={`power-${index}`}
+                  {...stylex.props(styles.input)}
+                  type="text"
+                  value={field.power}
+                  onChange={(e) => handleChange(e, "pace", index)}
+                />
+              </span>
+              <span>
+                <label
+                  {...stylex.props(styles.label)}
+                  htmlFor={`pace-${index}`}
+                >
+                  Pace (RPM)
+                </label>
+                <input
+                  id={`pace-${index}`}
+                  {...stylex.props(styles.input)}
+                  type="text"
+                  value={field.pace}
+                  onChange={(e) => handleChange(e, "pace", index)}
+                />
+              </span>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() =>
+              setFields([
+                ...fields,
+                { duration: _duration, power: _power, pace: _pace },
+              ])
+            }
+          >
+            Add
+          </button>
+          <input
+            type="submit"
+            value="Submit"
+            {...stylex.props(styles.button)}
+          />
+        </form>
+        <textarea value={xmlString} rows={40} cols={70} />
+      </div>
+    </>
   );
-}
+};
 
 export default App;
