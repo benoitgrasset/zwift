@@ -7,6 +7,8 @@ const _duration = 3;
 const _power = 180;
 const _pace = 80;
 
+const space = "        ";
+
 const todayDate = new Date().toLocaleDateString().replaceAll("/", "-");
 
 const exportToCSV = (data: string, fileName: string) => {
@@ -45,11 +47,13 @@ const App = () => {
         <durationType>time</durationType>
         <tags/>
         <workout>
-        ${newFields.map((field) => {
-          return `<SteadyState Duration="${field.duration}" Power="${field.power}" pace="${field.pace}"/> \n`;
-        })}
-        </workout>
-        </workout_file>
+        ${newFields
+          .map(
+            (field) =>
+              ` <SteadyState Duration="${field.duration}" Power="${field.power}" pace="${field.pace}"/>\n${space}`
+          )
+          .join("")}</workout>
+      </workout_file>
 `;
 
     exportToCSV(newXmlString, `New-Workout-${todayDate}.zwo`);
