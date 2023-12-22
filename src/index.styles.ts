@@ -12,6 +12,7 @@ export const styles = stylex.create({
   },
   input: {
     width: "50px",
+    height: "25px",
   },
   submit: {
     display: "block",
@@ -29,9 +30,11 @@ export const styles = stylex.create({
       backgroundColor: "#747bff",
     },
   },
-  field: {
+  interval: {
     margin: "10px 5px",
     padding: "3px 0",
+  },
+  field: {
     ":hover": {
       backgroundColor: "rgba(0, 0, 0, 0.1)",
     },

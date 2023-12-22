@@ -6,6 +6,7 @@ import { styles } from "./index.styles";
 const _duration = 3;
 const _power = 180;
 const _pace = 80;
+const _field = { duration: _duration, power: _power, pace: _pace };
 
 const space = "        ";
 
@@ -23,21 +24,11 @@ const exportToCSV = (data: string, fileName: string) => {
 };
 
 const App = () => {
-  const [fields, setFields] = useState([
-    { duration: _duration, power: _power, pace: _pace },
-  ]);
-
+  const [fields, setFields] = useState([_field]);
   const [xmlString, setXmlString] = useState("");
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const newFields = [...fields].map((field) => {
-      return {
-        duration: field.duration * 60,
-        power: Math.round((field.power / 316) * 10) / 10,
-        pace: field.pace,
-      };
-    });
     const newXmlString = `
       <workout_file>
         <author/>
@@ -47,11 +38,13 @@ const App = () => {
         <durationType>time</durationType>
         <tags/>
         <workout>
-        ${newFields
-          .map(
-            (field) =>
-              ` <SteadyState Duration="${field.duration}" Power="${field.power}" pace="${field.pace}"/>\n${space}`
-          )
+        ${fields
+          .map((field) => {
+            const duration = field.duration * 60;
+            const pace = field.pace;
+            const power = Math.round((field.power / 316) * 10) / 10;
+            return ` <SteadyState Duration="${duration}" Power="${power}" pace="${pace}"/>\n${space}`;
+          })
           .join("")}</workout>
       </workout_file>
 `;
@@ -65,10 +58,14 @@ const App = () => {
     field: "duration" | "pace" | "power",
     index: number
   ) => {
-    const newFields = [...fields];
-    newFields[index][field] = parseInt(e.target.value);
-    setFields(newFields);
+    setFields((prevState) => {
+      const newState = [...prevState];
+      newState[index][field] = parseInt(e.target.value);
+      return newState;
+    });
   };
+
+  const handleAddField = () => setFields([...fields, _field]);
 
   return (
     <>
@@ -80,18 +77,13 @@ const App = () => {
             role="button"
             tabIndex={0}
             {...stylex.props(styles.button)}
-            onClick={() =>
-              setFields([
-                ...fields,
-                { duration: _duration, power: _power, pace: _pace },
-              ])
-            }
+            onClick={handleAddField}
           >
             Add
           </button>
           {fields.map((field, index) => (
-            <div {...stylex.props(styles.field)}>
-              <span>
+            <div {...stylex.props(styles.interval)}>
+              <span {...stylex.props(styles.field)}>
                 <label
                   {...stylex.props(styles.label)}
                   htmlFor={`duration-${index}`}
@@ -106,7 +98,7 @@ const App = () => {
                   onChange={(e) => handleChange(e, "duration", index)}
                 />
               </span>
-              <span>
+              <span {...stylex.props(styles.field)}>
                 <label
                   {...stylex.props(styles.label)}
                   htmlFor={`power-${index}`}
@@ -121,7 +113,7 @@ const App = () => {
                   onChange={(e) => handleChange(e, "pace", index)}
                 />
               </span>
-              <span>
+              <span {...stylex.props(styles.field)}>
                 <label
                   {...stylex.props(styles.label)}
                   htmlFor={`pace-${index}`}
