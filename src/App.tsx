@@ -54,13 +54,13 @@ const App = () => {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>,
     field: "duration" | "pace" | "power",
     index: number
   ) => {
     setFields((prevState) => {
       const newState = [...prevState];
-      newState[index][field] = parseInt(e.target.value);
+      newState[index][field] = parseInt(event.target.value);
       return newState;
     });
   };
