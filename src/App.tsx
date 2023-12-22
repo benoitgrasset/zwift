@@ -75,8 +75,22 @@ const App = () => {
       <h1>Zwift ZWO Editor</h1>
       <div {...stylex.props(styles.root)}>
         <form noValidate onSubmit={handleSubmit}>
+          <button
+            type="button"
+            role="button"
+            tabIndex={0}
+            {...stylex.props(styles.button)}
+            onClick={() =>
+              setFields([
+                ...fields,
+                { duration: _duration, power: _power, pace: _pace },
+              ])
+            }
+          >
+            Add
+          </button>
           {fields.map((field, index) => (
-            <div style={{ margin: "5px" }}>
+            <div {...stylex.props(styles.field)}>
               <span>
                 <label
                   {...stylex.props(styles.label)}
@@ -124,21 +138,10 @@ const App = () => {
               </span>
             </div>
           ))}
-          <button
-            type="button"
-            onClick={() =>
-              setFields([
-                ...fields,
-                { duration: _duration, power: _power, pace: _pace },
-              ])
-            }
-          >
-            Add
-          </button>
           <input
             type="submit"
             value="Submit"
-            {...stylex.props(styles.button)}
+            {...stylex.props(styles.submit)}
           />
         </form>
         <textarea value={xmlString} rows={40} cols={70} />
