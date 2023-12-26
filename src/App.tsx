@@ -79,7 +79,7 @@ const App = () => {
             {...stylex.props(styles.button)}
             onClick={handleAddField}
           >
-            Add
+            + Add
           </button>
           {fields.map((field, index) => (
             <div {...stylex.props(styles.interval)}>
@@ -136,7 +136,12 @@ const App = () => {
             {...stylex.props(styles.submit)}
           />
         </form>
-        <textarea value={xmlString} rows={40} cols={70} />
+        <textarea
+          value={xmlString}
+          rows={40}
+          cols={70}
+          {...stylex.props(styles.textArea)}
+        />
       </div>
     </>
   );

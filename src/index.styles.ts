@@ -1,5 +1,7 @@
 import * as stylex from "@stylexjs/stylex";
 
+const height = "35px";
+
 export const styles = stylex.create({
   root: {
     display: "flex",
@@ -9,10 +11,12 @@ export const styles = stylex.create({
   },
   label: {
     margin: "0 5px",
+    height,
   },
   input: {
-    width: "50px",
-    height: "25px",
+    width: "55px",
+    height,
+    boxSizing: "border-box",
   },
   submit: {
     display: "block",
@@ -31,12 +35,22 @@ export const styles = stylex.create({
     },
   },
   interval: {
-    margin: "10px 5px",
-    padding: "3px 0",
+    margin: "10px 0",
+    gap: "10px",
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
   field: {
     ":hover": {
       backgroundColor: "rgba(0, 0, 0, 0.1)",
     },
+  },
+  textArea: {
+    maxHeight: "550px",
+    resize: "none",
+    boxSizing: "border-box",
+    padding: "5px",
   },
 });
