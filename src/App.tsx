@@ -26,6 +26,7 @@ const exportToCSV = (data: string, fileName: string) => {
 const App = () => {
   const [fields, setFields] = useState([_field]);
   const [xmlString, setXmlString] = useState("");
+  const [checked, setChecked] = useState(true);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -42,7 +43,9 @@ const App = () => {
           .map((field) => {
             const duration = field.duration * 60;
             const pace = field.pace;
-            const power = Math.round((field.power / 316) * 10) / 10;
+            const power = checked
+              ? Math.round((field.power / 316) * 10) / 10
+              : field.power;
             return ` <SteadyState Duration="${duration}" Power="${power}" pace="${pace}"/>\n${space}`;
           })
           .join("")}</workout>
@@ -67,11 +70,25 @@ const App = () => {
 
   const handleAddField = () => setFields([...fields, _field]);
 
+  const powerUnit = checked ? "Watts" : "FTP %";
+
   return (
     <>
       <h1>Zwift ZWO Editor</h1>
       <div {...stylex.props(styles.root)}>
         <form noValidate onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="checkbox" {...stylex.props(styles.label)}>
+              {powerUnit}
+            </label>
+            <input
+              id="checkbox"
+              type="checkbox"
+              {...stylex.props(styles.checkbox)}
+              checked={checked}
+              onChange={() => setChecked(!checked)}
+            />
+          </div>
           <button
             type="button"
             role="button"
@@ -103,7 +120,7 @@ const App = () => {
                   {...stylex.props(styles.label)}
                   htmlFor={`power-${index}`}
                 >
-                  Power (Watts)
+                  Power ({powerUnit})
                 </label>
                 <input
                   id={`power-${index}`}
