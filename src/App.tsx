@@ -3,9 +3,10 @@ import { useState } from "react";
 import "./App.css";
 import { styles } from "./index.styles";
 
-const _duration = 3;
-const _power = 180;
-const _pace = 80;
+const _ftp = 316; // integer
+const _duration = 3; // float
+const _power = 180; // integer
+const _pace = 80; // integer
 const _field = { duration: _duration, power: _power, pace: _pace };
 
 const space = "        ";
@@ -26,7 +27,12 @@ const exportToCSV = (data: string, fileName: string) => {
 const App = () => {
   const [fields, setFields] = useState([_field]);
   const [xmlString, setXmlString] = useState("");
-  const [checked, setChecked] = useState(true);
+  const [checked, setChecked] = useState(true); // true = watts, false = % ftp
+  const [ftp, setFtp] = useState(_ftp);
+
+  const getPower = (power: number) => {
+    return checked ? Math.round((power / ftp) * 10) / 10 : power / 100;
+  };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -43,9 +49,7 @@ const App = () => {
           .map((field) => {
             const duration = field.duration * 60;
             const pace = field.pace;
-            const power = checked
-              ? Math.round((field.power / 316) * 10) / 10
-              : field.power;
+            const power = getPower(field.power);
             return ` <SteadyState Duration="${duration}" Power="${power}" pace="${pace}"/>\n${space}`;
           })
           .join("")}</workout>
@@ -62,9 +66,15 @@ const App = () => {
     index: number
   ) => {
     setFields((prevState) => {
-      const newState = [...prevState];
-      newState[index][field] = parseInt(event.target.value);
-      return newState;
+      return prevState.map((item, i) => {
+        if (i === index) {
+          return {
+            ...item,
+            [field]: parseFloat(event.target.value),
+          };
+        }
+        return item;
+      });
     });
   };
 
@@ -72,22 +82,38 @@ const App = () => {
 
   const powerUnit = checked ? "Watts" : "FTP %";
 
+  console.log("BG", fields);
+
   return (
     <>
       <h1>Zwift ZWO Editor</h1>
       <div {...stylex.props(styles.root)}>
         <form noValidate onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="checkbox" {...stylex.props(styles.label)}>
-              {powerUnit}
-            </label>
-            <input
-              id="checkbox"
-              type="checkbox"
-              {...stylex.props(styles.checkbox)}
-              checked={checked}
-              onChange={() => setChecked(!checked)}
-            />
+          <div {...stylex.props(styles.params)}>
+            <span>
+              <label htmlFor="checkbox" {...stylex.props(styles.label)}>
+                {powerUnit}
+              </label>
+              <input
+                id="checkbox"
+                type="checkbox"
+                {...stylex.props(styles.checkbox)}
+                checked={checked}
+                onChange={() => setChecked(!checked)}
+              />
+            </span>
+            <span>
+              <label htmlFor="ftp" {...stylex.props(styles.label)}>
+                FTP (Watts)
+              </label>
+              <input
+                id="ftp"
+                type="text"
+                {...stylex.props(styles.input)}
+                value={ftp}
+                onChange={(e) => setFtp(parseInt(e.target.value))}
+              />
+            </span>
           </div>
           <button
             type="button"
@@ -111,6 +137,7 @@ const App = () => {
                   id={`duration-${index}`}
                   {...stylex.props(styles.input)}
                   type="text"
+                  inputMode="decimal"
                   value={field.duration}
                   onChange={(e) => handleChange(e, "duration", index)}
                 />
@@ -126,8 +153,9 @@ const App = () => {
                   id={`power-${index}`}
                   {...stylex.props(styles.input)}
                   type="text"
+                  inputMode="numeric"
                   value={field.power}
-                  onChange={(e) => handleChange(e, "pace", index)}
+                  onChange={(e) => handleChange(e, "power", index)}
                 />
               </span>
               <span {...stylex.props(styles.field)}>
@@ -141,6 +169,7 @@ const App = () => {
                   id={`pace-${index}`}
                   {...stylex.props(styles.input)}
                   type="text"
+                  inputMode="numeric"
                   value={field.pace}
                   onChange={(e) => handleChange(e, "pace", index)}
                 />
@@ -149,16 +178,35 @@ const App = () => {
           ))}
           <input
             type="submit"
-            value="Submit"
+            value="Generate"
             {...stylex.props(styles.submit)}
           />
         </form>
-        <textarea
-          value={xmlString}
-          rows={40}
-          cols={70}
-          {...stylex.props(styles.textArea)}
-        />
+        <div>
+          <textarea
+            value={xmlString}
+            rows={40}
+            cols={70}
+            {...stylex.props(styles.textArea)}
+          />
+          <div style={{ display: "flex", gap: "10px" }}>
+            {fields.map((field, number) => {
+              const power = getPower(field.power);
+              const height = power * 50;
+              const width = field.duration * 5;
+              return (
+                <div
+                  key={number}
+                  style={{
+                    background: "blue",
+                    width: `${width}px`,
+                    height: `${height}px`,
+                  }}
+                />
+              );
+            })}
+          </div>
+        </div>
       </div>
     </>
   );

@@ -54,4 +54,10 @@ export const styles = stylex.create({
     padding: "5px",
   },
   checkbox: {},
+  params: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "50px",
+  },
 });
