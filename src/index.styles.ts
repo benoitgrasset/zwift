@@ -60,4 +60,9 @@ export const styles = stylex.create({
     justifyContent: "center",
     gap: "50px",
   },
+  graph: {
+    display: "flex",
+    gap: "10px",
+    alignItems: "baseline",
+  },
 });

@@ -3,8 +3,32 @@ import { useState } from "react";
 import "./App.css";
 import { styles } from "./index.styles";
 
+const colorsByPower = {
+  z1: "#767676", // grey - recovery
+  z2: "#01b2cc", // blue - endurance
+  z3: "#5bbe5b", // green - tempo
+  z4: "#fbcc42", // yellow - threshold
+  z5: "#fb6418", // orange - vo2max
+  z6: "#ff0000", // red - anaerobic
+};
+
+const getPowerPercentColor = (powerPercent: number) => {
+  if (powerPercent < 0.6) return colorsByPower.z1;
+  if (powerPercent < 0.75) return colorsByPower.z2;
+  if (powerPercent < 0.89) return colorsByPower.z3;
+  if (powerPercent < 1.04) return colorsByPower.z4;
+  if (powerPercent < 1.18) return colorsByPower.z5;
+  return "#FF0000";
+};
+
+type Field = {
+  duration: number;
+  power: number;
+  pace: number;
+};
+
 const _ftp = 316; // integer
-const _duration = 3; // float
+const _duration = "3"; // float
 const _power = 180; // integer
 const _pace = 80; // integer
 const _field = { duration: _duration, power: _power, pace: _pace };
@@ -26,6 +50,7 @@ const exportToCSV = (data: string, fileName: string) => {
 
 const App = () => {
   const [fields, setFields] = useState([_field]);
+  const [finalFields, setFinalFields] = useState<Field[]>();
   const [xmlString, setXmlString] = useState("");
   const [checked, setChecked] = useState(true); // true = watts, false = % ftp
   const [ftp, setFtp] = useState(_ftp);
@@ -36,6 +61,18 @@ const App = () => {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const finalFields = fields.map((field) => {
+      const duration = parseFloat(field.duration) * 60;
+      const pace = field.pace;
+      const power = getPower(field.power);
+      return {
+        ...field,
+        power,
+        duration,
+        pace,
+      };
+    });
+    setFinalFields(finalFields);
     const newXmlString = `
       <workout_file>
         <author/>
@@ -45,11 +82,8 @@ const App = () => {
         <durationType>time</durationType>
         <tags/>
         <workout>
-        ${fields
-          .map((field) => {
-            const duration = field.duration * 60;
-            const pace = field.pace;
-            const power = getPower(field.power);
+        ${finalFields
+          .map(({ duration, power, pace }) => {
             return ` <SteadyState Duration="${duration}" Power="${power}" pace="${pace}"/>\n${space}`;
           })
           .join("")}</workout>
@@ -70,7 +104,7 @@ const App = () => {
         if (i === index) {
           return {
             ...item,
-            [field]: parseFloat(event.target.value),
+            [field]: event.target.value,
           };
         }
         return item;
@@ -81,8 +115,6 @@ const App = () => {
   const handleAddField = () => setFields([...fields, _field]);
 
   const powerUnit = checked ? "Watts" : "FTP %";
-
-  console.log("BG", fields);
 
   return (
     <>
@@ -189,16 +221,15 @@ const App = () => {
             cols={70}
             {...stylex.props(styles.textArea)}
           />
-          <div style={{ display: "flex", gap: "10px" }}>
-            {fields.map((field, number) => {
-              const power = getPower(field.power);
+          <div {...stylex.props(styles.graph)}>
+            {finalFields?.map(({ power, duration }, number) => {
               const height = power * 50;
-              const width = field.duration * 5;
+              const width = (duration / 60) * 6;
               return (
                 <div
                   key={number}
                   style={{
-                    background: "blue",
+                    background: getPowerPercentColor(power),
                     width: `${width}px`,
                     height: `${height}px`,
                   }}
