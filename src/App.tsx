@@ -112,6 +112,18 @@ const App = () => {
     });
   };
 
+  const togglePowerUnit = () => {
+    setChecked(!checked);
+    setFields((prevState) => {
+      return prevState.map((item) => {
+        return {
+          ...item,
+          power: 0,
+        };
+      });
+    });
+  };
+
   const handleAddField = () => setFields([...fields, _field]);
 
   const powerUnit = checked ? "Watts" : "FTP %";
@@ -131,7 +143,7 @@ const App = () => {
                 type="checkbox"
                 {...stylex.props(styles.checkbox)}
                 checked={checked}
-                onChange={() => setChecked(!checked)}
+                onChange={togglePowerUnit}
               />
             </span>
             <span>
