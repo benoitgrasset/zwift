@@ -27,7 +27,9 @@ type Field = {
   pace: number;
 };
 
-const _ftp = 316; // integer
+const localStorageKey = "FTP";
+
+const _ftp = parseInt(localStorage.getItem(localStorageKey) || "316"); // integer
 const _duration = "3"; // float
 const _power = 180; // integer
 const _pace = 80; // integer
@@ -155,7 +157,11 @@ const App = () => {
                 type="text"
                 {...stylex.props(styles.input)}
                 value={ftp}
-                onChange={(e) => setFtp(parseInt(e.target.value))}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFtp(parseInt(value));
+                  localStorage.setItem(localStorageKey, value);
+                }}
               />
             </span>
           </div>
