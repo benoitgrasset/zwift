@@ -12,6 +12,7 @@ export const styles = stylex.create({
   label: {
     margin: "0 5px",
     height,
+    display: "inline!important",
   },
   input: {
     width: "55px",

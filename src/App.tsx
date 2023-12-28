@@ -1,3 +1,11 @@
+import {
+  Box,
+  Button,
+  Input,
+  InputLabel,
+  ToggleButton,
+  ToggleButtonGroup,
+} from "@mui/material";
 import * as stylex from "@stylexjs/stylex";
 import { useState } from "react";
 import "./App.css";
@@ -27,6 +35,9 @@ type Field = {
   pace: number;
 };
 
+type PowerUnit = "watts" | "percent";
+const powerUnits: PowerUnit[] = ["watts", "percent"];
+
 const localStorageKey = "FTP";
 
 const _ftp = parseInt(localStorage.getItem(localStorageKey) || "316"); // integer
@@ -54,15 +65,18 @@ const App = () => {
   const [fields, setFields] = useState([_field]);
   const [finalFields, setFinalFields] = useState<Field[]>();
   const [xmlString, setXmlString] = useState("");
-  const [checked, setChecked] = useState(true); // true = watts, false = % ftp
+  const [powerUnit, setPowerUnit] = useState<PowerUnit>(powerUnits[0]); // watts or percent
   const [ftp, setFtp] = useState(_ftp);
 
   const getPower = (power: number) => {
-    return checked ? Math.round((power / ftp) * 10) / 10 : power / 100;
+    return powerUnit === "watts"
+      ? Math.round((power / ftp) * 10) / 10
+      : power / 100;
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
     const finalFields = fields.map((field) => {
       const duration = parseFloat(field.duration) * 60;
       const pace = field.pace;
@@ -97,7 +111,7 @@ const App = () => {
   };
 
   const handleChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     field: "duration" | "pace" | "power",
     index: number
   ) => {
@@ -115,7 +129,7 @@ const App = () => {
   };
 
   const togglePowerUnit = () => {
-    setChecked(!checked);
+    setPowerUnit((prevState) => (prevState === "watts" ? "percent" : "watts"));
     setFields((prevState) => {
       return prevState.map((item) => {
         return {
@@ -128,31 +142,31 @@ const App = () => {
 
   const handleAddField = () => setFields([...fields, _field]);
 
-  const powerUnit = checked ? "Watts" : "FTP %";
-
   return (
     <>
       <h1>Zwift ZWO Editor</h1>
-      <div {...stylex.props(styles.root)}>
+      <Box {...stylex.props(styles.root)}>
         <form noValidate onSubmit={handleSubmit}>
-          <div {...stylex.props(styles.params)}>
+          <Box {...stylex.props(styles.params)}>
+            <ToggleButtonGroup
+              value={powerUnit}
+              exclusive
+              onChange={togglePowerUnit}
+              aria-label="Power unit"
+            >
+              <ToggleButton value={powerUnits[0]} aria-label="Watts">
+                Watts
+              </ToggleButton>
+              <ToggleButton value={powerUnits[1]} aria-label="FTP %">
+                FTP %
+              </ToggleButton>
+            </ToggleButtonGroup>
+
             <span>
-              <label htmlFor="checkbox" {...stylex.props(styles.label)}>
-                {powerUnit}
-              </label>
-              <input
-                id="checkbox"
-                type="checkbox"
-                {...stylex.props(styles.checkbox)}
-                checked={checked}
-                onChange={togglePowerUnit}
-              />
-            </span>
-            <span>
-              <label htmlFor="ftp" {...stylex.props(styles.label)}>
+              <InputLabel htmlFor="ftp" {...stylex.props(styles.label)}>
                 FTP (Watts)
-              </label>
-              <input
+              </InputLabel>
+              <Input
                 id="ftp"
                 type="text"
                 {...stylex.props(styles.input)}
@@ -164,26 +178,27 @@ const App = () => {
                 }}
               />
             </span>
-          </div>
-          <button
+          </Box>
+          <Button
             type="button"
             role="button"
+            variant="contained"
             tabIndex={0}
             {...stylex.props(styles.button)}
             onClick={handleAddField}
           >
             + Add
-          </button>
+          </Button>
           {fields.map((field, index) => (
-            <div {...stylex.props(styles.interval)}>
+            <Box {...stylex.props(styles.interval)}>
               <span {...stylex.props(styles.field)}>
-                <label
+                <InputLabel
                   {...stylex.props(styles.label)}
                   htmlFor={`duration-${index}`}
                 >
                   Duration (min)
-                </label>
-                <input
+                </InputLabel>
+                <Input
                   id={`duration-${index}`}
                   {...stylex.props(styles.input)}
                   type="text"
@@ -193,13 +208,13 @@ const App = () => {
                 />
               </span>
               <span {...stylex.props(styles.field)}>
-                <label
+                <InputLabel
                   {...stylex.props(styles.label)}
                   htmlFor={`power-${index}`}
                 >
                   Power ({powerUnit})
-                </label>
-                <input
+                </InputLabel>
+                <Input
                   id={`power-${index}`}
                   {...stylex.props(styles.input)}
                   type="text"
@@ -209,13 +224,13 @@ const App = () => {
                 />
               </span>
               <span {...stylex.props(styles.field)}>
-                <label
+                <InputLabel
                   {...stylex.props(styles.label)}
                   htmlFor={`pace-${index}`}
                 >
                   Pace (RPM)
-                </label>
-                <input
+                </InputLabel>
+                <Input
                   id={`pace-${index}`}
                   {...stylex.props(styles.input)}
                   type="text"
@@ -224,7 +239,7 @@ const App = () => {
                   onChange={(e) => handleChange(e, "pace", index)}
                 />
               </span>
-            </div>
+            </Box>
           ))}
           <input
             type="submit"
@@ -232,19 +247,19 @@ const App = () => {
             {...stylex.props(styles.submit)}
           />
         </form>
-        <div>
+        <Box>
           <textarea
             value={xmlString}
             rows={40}
             cols={70}
             {...stylex.props(styles.textArea)}
           />
-          <div {...stylex.props(styles.graph)}>
+          <Box {...stylex.props(styles.graph)}>
             {finalFields?.map(({ power, duration }, number) => {
               const height = power * 50;
               const width = (duration / 60) * 6;
               return (
-                <div
+                <Box
                   key={number}
                   style={{
                     background: getPowerPercentColor(power),
@@ -254,9 +269,9 @@ const App = () => {
                 />
               );
             })}
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
     </>
   );
 };
