@@ -183,7 +183,7 @@ const App = () => {
     <>
       <h1>Zwift ZWO Editor</h1>
       <Box {...stylex.props(styles.root)}>
-        <form noValidate onSubmit={handleSubmit}>
+        <Box>
           <Box {...stylex.props(styles.params)}>
             <ToggleButtonGroup
               value={powerUnit}
@@ -226,77 +226,79 @@ const App = () => {
           >
             + Add
           </Button>
-          {fields.map((field, index) => (
-            <Box {...stylex.props(styles.interval)}>
-              <Checkbox
-                checked={field.selected}
-                onChange={() => handleCheckboxChange(index)}
-                {...stylex.props(styles.checkbox)}
-              />
-              <span {...stylex.props(styles.field)}>
-                <InputLabel
-                  {...stylex.props(styles.label)}
-                  htmlFor={`duration-${index}`}
-                >
-                  Duration (min)
-                </InputLabel>
-                <Input
-                  id={`duration-${index}`}
-                  {...stylex.props(styles.input)}
-                  type="text"
-                  inputMode="decimal"
-                  value={field.duration}
-                  onChange={(e) => handleTextChange(e, "duration", index)}
+          <form noValidate onSubmit={handleSubmit}>
+            {fields.map((field, index) => (
+              <Box {...stylex.props(styles.interval)}>
+                <Checkbox
+                  checked={field.selected}
+                  onChange={() => handleCheckboxChange(index)}
+                  {...stylex.props(styles.checkbox)}
                 />
-              </span>
-              <span {...stylex.props(styles.field)}>
-                <InputLabel
-                  {...stylex.props(styles.label)}
-                  htmlFor={`power-${index}`}
-                >
-                  Power ({powerUnit})
-                </InputLabel>
-                <Input
-                  id={`power-${index}`}
-                  {...stylex.props(styles.input)}
-                  type="text"
-                  inputMode="numeric"
-                  value={field.power}
-                  onChange={(e) => handleTextChange(e, "power", index)}
-                />
-              </span>
-              <span {...stylex.props(styles.field)}>
-                <InputLabel
-                  {...stylex.props(styles.label)}
-                  htmlFor={`pace-${index}`}
-                >
-                  Pace (RPM)
-                </InputLabel>
-                <Input
-                  id={`pace-${index}`}
-                  {...stylex.props(styles.input)}
-                  type="text"
-                  inputMode="numeric"
-                  value={field.pace}
-                  onChange={(e) => handleTextChange(e, "pace", index)}
-                />
-              </span>
-              <Tooltip title="Duplicate Field">
-                <IconButton
-                  aria-label="duplicate"
-                  onClick={() => duplicateFields(index)}
-                >
-                  <MdAdd />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          ))}
-          <input
-            type="submit"
-            value="Generate"
-            {...stylex.props(styles.submit)}
-          />
-        </form>
+                <span {...stylex.props(styles.field)}>
+                  <InputLabel
+                    {...stylex.props(styles.label)}
+                    htmlFor={`duration-${index}`}
+                  >
+                    Duration (min)
+                  </InputLabel>
+                  <Input
+                    id={`duration-${index}`}
+                    {...stylex.props(styles.input)}
+                    type="text"
+                    inputMode="decimal"
+                    value={field.duration}
+                    onChange={(e) => handleTextChange(e, "duration", index)}
+                  />
+                </span>
+                <span {...stylex.props(styles.field)}>
+                  <InputLabel
+                    {...stylex.props(styles.label)}
+                    htmlFor={`power-${index}`}
+                  >
+                    Power ({powerUnit})
+                  </InputLabel>
+                  <Input
+                    id={`power-${index}`}
+                    {...stylex.props(styles.input)}
+                    type="text"
+                    inputMode="numeric"
+                    value={field.power}
+                    onChange={(e) => handleTextChange(e, "power", index)}
+                  />
+                </span>
+                <span {...stylex.props(styles.field)}>
+                  <InputLabel
+                    {...stylex.props(styles.label)}
+                    htmlFor={`pace-${index}`}
+                  >
+                    Pace (RPM)
+                  </InputLabel>
+                  <Input
+                    id={`pace-${index}`}
+                    {...stylex.props(styles.input)}
+                    type="text"
+                    inputMode="numeric"
+                    value={field.pace}
+                    onChange={(e) => handleTextChange(e, "pace", index)}
+                  />
+                </span>
+                <Tooltip title="Duplicate Field">
+                  <IconButton
+                    aria-label="duplicate"
+                    onClick={() => duplicateFields(index)}
+                  >
+                    <MdAdd />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            ))}
+            <input
+              type="submit"
+              value="Generate"
+              {...stylex.props(styles.submit)}
+            />
+          </form>
+        </Box>
         <Box>
           <textarea
             value={xmlString}
