@@ -24,13 +24,31 @@ const colorsByPower = {
   z6: "#ff0000", // red - anaerobic
 };
 
+const lightColorsByPower = {
+  z1: "#c8c8c8", // grey - recovery
+  z2: "#86effe", // blue - endurance
+  z3: "#bde5bd", // green - tempo
+  z4: "#fdebb3", // yellow - threshold
+  z5: "#fdc1a3", // orange - vo2max
+  z6: "#ff9999", // red - anaerobic
+};
+
 const getPowerPercentColor = (powerPercent: number) => {
   if (powerPercent < 0.6) return colorsByPower.z1;
   if (powerPercent < 0.75) return colorsByPower.z2;
   if (powerPercent < 0.89) return colorsByPower.z3;
   if (powerPercent < 1.04) return colorsByPower.z4;
   if (powerPercent < 1.18) return colorsByPower.z5;
-  return "#FF0000";
+  return colorsByPower.z6;
+};
+
+const getPowerPercentLightColor = (powerPercent: number) => {
+  if (powerPercent < 0.6) return lightColorsByPower.z1;
+  if (powerPercent < 0.75) return lightColorsByPower.z2;
+  if (powerPercent < 0.89) return lightColorsByPower.z3;
+  if (powerPercent < 1.04) return lightColorsByPower.z4;
+  if (powerPercent < 1.18) return lightColorsByPower.z5;
+  return lightColorsByPower.z6;
 };
 
 type Field = {
@@ -229,10 +247,12 @@ const App = () => {
           <form noValidate onSubmit={handleSubmit}>
             {fields.map((field, index) => (
               <Box
-                {...stylex.props(
-                  styles.interval,
-                  field.selected && styles.selected
-                )}
+                {...stylex.props(styles.interval)}
+                sx={{
+                  background: field.selected
+                    ? getPowerPercentColor(getPower(field.power))
+                    : getPowerPercentLightColor(getPower(field.power)),
+                }}
               >
                 <Checkbox
                   checked={field.selected}
@@ -265,7 +285,7 @@ const App = () => {
                   <Input
                     id={`power-${index}`}
                     {...stylex.props(styles.input)}
-                    type="text"
+                    type="number"
                     inputMode="numeric"
                     value={field.power}
                     onChange={(e) => handleTextChange(e, "power", index)}

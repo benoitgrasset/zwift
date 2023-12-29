@@ -67,7 +67,4 @@ export const styles = stylex.create({
     gap: "10px",
     alignItems: "baseline",
   },
-  selected: {
-    backgroundColor: "rgba(0, 0, 0, 0.15)",
-  },
 });
