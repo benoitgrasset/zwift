@@ -15,7 +15,8 @@
     "@mui/material": "^5.15.2",
     "@stylexjs/stylex": "^0.3.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.12.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",

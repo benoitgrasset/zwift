@@ -1,13 +1,17 @@
 import {
   Box,
   Button,
+  Checkbox,
+  IconButton,
   Input,
   InputLabel,
   ToggleButton,
   ToggleButtonGroup,
+  Tooltip,
 } from "@mui/material";
 import * as stylex from "@stylexjs/stylex";
 import { useState } from "react";
+import { MdAdd } from "react-icons/md";
 import "./App.css";
 import { styles } from "./index.styles";
 
@@ -44,7 +48,12 @@ const _ftp = parseInt(localStorage.getItem(localStorageKey) || "316"); // intege
 const _duration = "3"; // float
 const _power = 180; // integer
 const _pace = 80; // integer
-const _field = { duration: _duration, power: _power, pace: _pace };
+const _field = {
+  duration: _duration,
+  power: _power,
+  pace: _pace,
+  selected: false,
+};
 
 const space = "        ";
 
@@ -110,7 +119,7 @@ const App = () => {
     setXmlString(newXmlString);
   };
 
-  const handleChange = (
+  const handleTextChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     field: "duration" | "pace" | "power",
     index: number
@@ -140,7 +149,35 @@ const App = () => {
     });
   };
 
-  const handleAddField = () => setFields([...fields, _field]);
+  const handleCheckboxChange = (index: number) => {
+    setFields((prevState) => {
+      return prevState.map((item, i) => {
+        if (i === index) {
+          return {
+            ...item,
+            selected: !item.selected,
+          };
+        }
+        return item;
+      });
+    });
+  };
+
+  const duplicateFields = (index: number) => {
+    const selectedFields = fields
+      .filter((field) => field.selected)
+      .map((field) => {
+        return {
+          ...field,
+          selected: false,
+        };
+      });
+    const newFields = [...fields];
+    newFields.splice(index, 0, ...selectedFields);
+    setFields(newFields);
+  };
+
+  const handleAddNewField = () => setFields([...fields, _field]);
 
   return (
     <>
@@ -185,12 +222,17 @@ const App = () => {
             variant="contained"
             tabIndex={0}
             {...stylex.props(styles.button)}
-            onClick={handleAddField}
+            onClick={handleAddNewField}
           >
             + Add
           </Button>
           {fields.map((field, index) => (
             <Box {...stylex.props(styles.interval)}>
+              <Checkbox
+                checked={field.selected}
+                onChange={() => handleCheckboxChange(index)}
+                {...stylex.props(styles.checkbox)}
+              />
               <span {...stylex.props(styles.field)}>
                 <InputLabel
                   {...stylex.props(styles.label)}
@@ -204,7 +246,7 @@ const App = () => {
                   type="text"
                   inputMode="decimal"
                   value={field.duration}
-                  onChange={(e) => handleChange(e, "duration", index)}
+                  onChange={(e) => handleTextChange(e, "duration", index)}
                 />
               </span>
               <span {...stylex.props(styles.field)}>
@@ -220,7 +262,7 @@ const App = () => {
                   type="text"
                   inputMode="numeric"
                   value={field.power}
-                  onChange={(e) => handleChange(e, "power", index)}
+                  onChange={(e) => handleTextChange(e, "power", index)}
                 />
               </span>
               <span {...stylex.props(styles.field)}>
@@ -236,9 +278,17 @@ const App = () => {
                   type="text"
                   inputMode="numeric"
                   value={field.pace}
-                  onChange={(e) => handleChange(e, "pace", index)}
+                  onChange={(e) => handleTextChange(e, "pace", index)}
                 />
               </span>
+              <Tooltip title="Duplicate Field">
+                <IconButton
+                  aria-label="duplicate"
+                  onClick={() => duplicateFields(index)}
+                >
+                  <MdAdd />
+                </IconButton>
+              </Tooltip>
             </Box>
           ))}
           <input

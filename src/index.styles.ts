@@ -7,7 +7,7 @@ export const styles = stylex.create({
     display: "flex",
     flexDirection: "row",
     justifyContent: "center",
-    gap: "10px",
+    gap: "50px",
   },
   label: {
     margin: "0 5px",
@@ -60,6 +60,7 @@ export const styles = stylex.create({
     alignItems: "center",
     justifyContent: "center",
     gap: "50px",
+    marginBottom: "10px",
   },
   graph: {
     display: "flex",
