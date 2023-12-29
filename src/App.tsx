@@ -51,7 +51,7 @@ const getPowerPercentLightColor = (powerPercent: number) => {
   return lightColorsByPower.z6;
 };
 
-type Field = {
+type FinalField = {
   duration: number;
   power: number;
   pace: number;
@@ -90,7 +90,7 @@ const exportToCSV = (data: string, fileName: string) => {
 
 const App = () => {
   const [fields, setFields] = useState([_field]);
-  const [finalFields, setFinalFields] = useState<Field[]>();
+  const [finalFields, setFinalFields] = useState<FinalField[]>();
   const [xmlString, setXmlString] = useState("");
   const [powerUnit, setPowerUnit] = useState<PowerUnit>(powerUnits[0]); // watts or percent
   const [ftp, setFtp] = useState(_ftp);
@@ -191,7 +191,7 @@ const App = () => {
         };
       });
     const newFields = [...fields];
-    newFields.splice(index, 0, ...selectedFields);
+    newFields.splice(index + 1, 0, ...selectedFields);
     setFields(newFields);
   };
 
@@ -301,7 +301,7 @@ const App = () => {
                   <Input
                     id={`pace-${index}`}
                     {...stylex.props(styles.input)}
-                    type="text"
+                    type="number"
                     inputMode="numeric"
                     value={field.pace}
                     onChange={(e) => handleTextChange(e, "pace", index)}
