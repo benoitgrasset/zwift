@@ -228,7 +228,12 @@ const App = () => {
           </Button>
           <form noValidate onSubmit={handleSubmit}>
             {fields.map((field, index) => (
-              <Box {...stylex.props(styles.interval)}>
+              <Box
+                {...stylex.props(
+                  styles.interval,
+                  field.selected && styles.selected
+                )}
+              >
                 <Checkbox
                   checked={field.selected}
                   onChange={() => handleCheckboxChange(index)}
