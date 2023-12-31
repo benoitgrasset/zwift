@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import * as stylex from "@stylexjs/stylex";
 import { useState } from "react";
-import { MdAdd } from "react-icons/md";
+import { MdAdd, MdDownload } from "react-icons/md";
 import "./App.css";
 import { styles } from "./index.styles";
 
@@ -77,7 +77,7 @@ const space = "        ";
 
 const todayDate = new Date().toLocaleDateString().replaceAll("/", "-");
 
-const exportToCSV = (data: string, fileName: string) => {
+const downLoadFile = (data: string, fileName: string) => {
   const url = window.URL.createObjectURL(new Blob([data]));
   const link = document.createElement("a");
   link.href = url;
@@ -133,7 +133,7 @@ const App = () => {
       </workout_file>
 `;
 
-    exportToCSV(newXmlString, `New-Workout-${todayDate}.zwo`);
+    downLoadFile(newXmlString, `New-Workout-${todayDate}.zwo`);
     setXmlString(newXmlString);
   };
 
@@ -182,16 +182,16 @@ const App = () => {
   };
 
   const duplicateFields = (index: number) => {
-    const selectedFields = fields
-      .filter((field) => field.selected)
+    const selectedFields = fields.filter((field) => field.selected);
+    const newFields = [...fields]
+      .toSpliced(index + 1, 0, ...selectedFields)
       .map((field) => {
         return {
           ...field,
           selected: false,
         };
       });
-    const newFields = [...fields];
-    newFields.splice(index + 1, 0, ...selectedFields);
+
     setFields(newFields);
   };
 
@@ -238,6 +238,7 @@ const App = () => {
             type="button"
             role="button"
             variant="contained"
+            color="secondary"
             tabIndex={0}
             {...stylex.props(styles.button)}
             onClick={handleAddNewField}
@@ -305,23 +306,34 @@ const App = () => {
                     inputMode="numeric"
                     value={field.pace}
                     onChange={(e) => handleTextChange(e, "pace", index)}
+                    sx={{
+                      textAlign: "center",
+                    }}
                   />
                 </span>
                 <Tooltip title="Duplicate Field">
                   <IconButton
                     aria-label="duplicate"
                     onClick={() => duplicateFields(index)}
+                    disabled={!fields.some((field) => field.selected)}
                   >
                     <MdAdd />
                   </IconButton>
                 </Tooltip>
               </Box>
             ))}
-            <input
+            <Button
               type="submit"
-              value="Generate"
               {...stylex.props(styles.submit)}
-            />
+              variant="contained"
+              color="primary"
+              startIcon={<MdDownload />}
+              sx={{
+                marginTop: "30px",
+              }}
+            >
+              Download
+            </Button>
           </form>
         </Box>
         <Box>

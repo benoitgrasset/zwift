@@ -20,14 +20,7 @@ export const styles = stylex.create({
     boxSizing: "border-box",
   },
   submit: {
-    display: "block",
-    width: "100%",
     height: "35px",
-    marginTop: "10px",
-    cursor: "pointer",
-    fontSize: "1em",
-    fontWeight: 500,
-    fontFamily: "inherit",
   },
   button: {
     cursor: "pointer",
