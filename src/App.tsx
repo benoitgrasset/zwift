@@ -57,6 +57,14 @@ type FinalField = {
   pace: number;
 };
 
+type Ramp = {
+  duration: string;
+  pace: number;
+  PowerLow: number;
+  PowerHigh: number;
+  selected: boolean;
+};
+
 type PowerUnit = "watts" | "percent";
 const powerUnits: PowerUnit[] = ["watts", "percent"];
 
@@ -66,6 +74,8 @@ const _ftp = parseInt(localStorage.getItem(localStorageKey) || "316"); // intege
 const _duration = "3"; // float
 const _power = 180; // integer
 const _pace = 80; // integer
+const _powerLow = 0.25; // float
+const _powerHigh = 0.75; // float
 const _field = {
   duration: _duration,
   power: _power,
@@ -90,6 +100,8 @@ const downLoadFile = (data: string, fileName: string) => {
 
 const App = () => {
   const [fields, setFields] = useState([_field]);
+  const [warmup, setWarmup] = useState<Ramp>();
+  const [cooldown, setCooldown] = useState<Ramp>();
   const [finalFields, setFinalFields] = useState<FinalField[]>();
   const [xmlString, setXmlString] = useState("");
   const [powerUnit, setPowerUnit] = useState<PowerUnit>(powerUnits[0]); // watts or percent
@@ -125,11 +137,22 @@ const App = () => {
         <durationType>time</durationType>
         <tags/>
         <workout>
-        ${finalFields
-          .map(({ duration, power, pace }) => {
-            return ` <SteadyState Duration="${duration}" Power="${power}" pace="${pace}"/>\n${space}`;
-          })
-          .join("")}</workout>
+          ${
+            warmup
+              ? `<Warmup Duration="${warmup.duration}" PowerLow="${warmup.PowerLow}" PowerHigh="${warmup.PowerHigh}" pace="${warmup.pace}"/>`
+              : ""
+          }
+          ${finalFields
+            .map(({ duration, power, pace }) => {
+              return ` <SteadyState Duration="${duration}" Power="${power}" pace="${pace}"/>\n${space}`;
+            })
+            .join("")}
+          ${
+            cooldown
+              ? `<Cooldown Duration="${cooldown.duration}" PowerLow="${cooldown.PowerLow}" PowerHigh="${cooldown.PowerHigh}" pace="${cooldown.pace}"/>`
+              : ""
+          }
+      </workout>
       </workout_file>
 `;
 
@@ -197,6 +220,28 @@ const App = () => {
 
   const handleAddNewField = () => setFields([...fields, _field]);
 
+  const handleAddWarmup = () => {
+    const warmup = {
+      duration: "5",
+      pace: _pace,
+      PowerLow: _powerLow,
+      PowerHigh: _powerHigh,
+      selected: false,
+    };
+    setWarmup(warmup);
+  };
+
+  const handleAddCooldown = () => {
+    const cooldown = {
+      duration: "5",
+      pace: _pace,
+      PowerLow: _powerLow,
+      PowerHigh: _powerHigh,
+      selected: false,
+    };
+    setCooldown(cooldown);
+  };
+
   return (
     <>
       <h1>Zwift ZWO Editor</h1>
@@ -223,7 +268,7 @@ const App = () => {
               </InputLabel>
               <Input
                 id="ftp"
-                type="text"
+                type="number"
                 {...stylex.props(styles.input)}
                 value={ftp}
                 onChange={(e) => {
@@ -233,21 +278,138 @@ const App = () => {
                 }}
               />
             </span>
+          </Box>
 
+          <Box {...stylex.props(styles.params)}>
             <Button
               type="button"
               role="button"
               variant="contained"
-              color="secondary"
-              tabIndex={0}
+              color="primary"
               {...stylex.props(styles.button)}
               onClick={handleAddNewField}
             >
               + Add
             </Button>
+            <Button
+              type="button"
+              role="button"
+              variant="contained"
+              color="secondary"
+              {...stylex.props(styles.button)}
+              onClick={handleAddWarmup}
+            >
+              + Add Warmup
+            </Button>
+            <Button
+              type="button"
+              role="button"
+              variant="contained"
+              color="secondary"
+              {...stylex.props(styles.button)}
+              onClick={handleAddCooldown}
+            >
+              + Add Cooldown
+            </Button>
           </Box>
 
           <form noValidate onSubmit={handleSubmit}>
+            {warmup && (
+              <Box
+                {...stylex.props(styles.interval)}
+                sx={{
+                  background: colorsByPower.z1,
+                }}
+              >
+                <span {...stylex.props(styles.field)}>
+                  <InputLabel
+                    {...stylex.props(styles.label)}
+                    htmlFor={`warmup-duration`}
+                  >
+                    Duration (min)
+                  </InputLabel>
+                  <Input
+                    id={`warmup-duration`}
+                    {...stylex.props(styles.input)}
+                    type="text"
+                    inputMode="decimal"
+                    value={warmup.duration}
+                    onChange={(e) =>
+                      setWarmup((prevState) => ({
+                        ...prevState!,
+                        duration: e.target.value,
+                      }))
+                    }
+                  />
+                </span>
+                <span {...stylex.props(styles.field)}>
+                  <InputLabel
+                    {...stylex.props(styles.label)}
+                    htmlFor={`warmup-power-low`}
+                  >
+                    Power Low ({powerUnit})
+                  </InputLabel>
+                  <Input
+                    id={`warmup-power-low`}
+                    {...stylex.props(styles.input)}
+                    type="number"
+                    inputMode="numeric"
+                    value={warmup.PowerLow}
+                    onChange={(e) =>
+                      setWarmup((prevState) => ({
+                        ...prevState!,
+                        PowerLow: parseFloat(e.target.value),
+                      }))
+                    }
+                  />
+                </span>
+                <span {...stylex.props(styles.field)}>
+                  <InputLabel
+                    {...stylex.props(styles.label)}
+                    htmlFor={`warmup-power-high`}
+                  >
+                    Power High ({powerUnit})
+                  </InputLabel>
+                  <Input
+                    id={`warmup-power-high`}
+                    {...stylex.props(styles.input)}
+                    type="number"
+                    inputMode="numeric"
+                    value={warmup.PowerHigh}
+                    onChange={(e) =>
+                      setWarmup((prevState) => ({
+                        ...prevState!,
+                        PowerLow: parseFloat(e.target.value),
+                      }))
+                    }
+                  />
+                </span>
+                <span {...stylex.props(styles.field)}>
+                  <InputLabel
+                    {...stylex.props(styles.label)}
+                    htmlFor={`warmup-pace`}
+                  >
+                    Pace (RPM)
+                  </InputLabel>
+                  <Input
+                    id={`warmup-pace`}
+                    {...stylex.props(styles.input)}
+                    type="number"
+                    inputMode="numeric"
+                    value={warmup.pace}
+                    onChange={(e) =>
+                      setWarmup((prevState) => ({
+                        ...prevState!,
+                        pace: parseFloat(e.target.value),
+                      }))
+                    }
+                    sx={{
+                      textAlign: "center",
+                    }}
+                  />
+                </span>
+              </Box>
+            )}
             {fields.map((field, index) => (
               <Box
                 {...stylex.props(styles.interval)}
@@ -324,6 +486,102 @@ const App = () => {
                 </Tooltip>
               </Box>
             ))}
+            {cooldown && (
+              <Box
+                {...stylex.props(styles.interval)}
+                sx={{
+                  background: colorsByPower.z1,
+                }}
+              >
+                <span {...stylex.props(styles.field)}>
+                  <InputLabel
+                    {...stylex.props(styles.label)}
+                    htmlFor={`cooldown-duration`}
+                  >
+                    Duration (min)
+                  </InputLabel>
+                  <Input
+                    id={`cooldown-duration`}
+                    {...stylex.props(styles.input)}
+                    type="text"
+                    inputMode="decimal"
+                    value={cooldown.duration}
+                    onChange={(e) =>
+                      setCooldown((prevState) => ({
+                        ...prevState!,
+                        duration: e.target.value,
+                      }))
+                    }
+                  />
+                </span>
+                <span {...stylex.props(styles.field)}>
+                  <InputLabel
+                    {...stylex.props(styles.label)}
+                    htmlFor={`cooldown-power-high`}
+                  >
+                    Power High ({powerUnit})
+                  </InputLabel>
+                  <Input
+                    id={`cooldown-power-high`}
+                    {...stylex.props(styles.input)}
+                    type="number"
+                    inputMode="numeric"
+                    value={cooldown.PowerHigh}
+                    onChange={(e) =>
+                      setCooldown((prevState) => ({
+                        ...prevState!,
+                        PowerLow: parseFloat(e.target.value),
+                      }))
+                    }
+                  />
+                </span>
+                <span {...stylex.props(styles.field)}>
+                  <InputLabel
+                    {...stylex.props(styles.label)}
+                    htmlFor={`cooldown-power-low`}
+                  >
+                    Power Low ({powerUnit})
+                  </InputLabel>
+                  <Input
+                    id={`cooldown-power-low`}
+                    {...stylex.props(styles.input)}
+                    type="number"
+                    inputMode="numeric"
+                    value={cooldown.PowerLow}
+                    onChange={(e) =>
+                      setCooldown((prevState) => ({
+                        ...prevState!,
+                        PowerLow: parseFloat(e.target.value),
+                      }))
+                    }
+                  />
+                </span>
+                <span {...stylex.props(styles.field)}>
+                  <InputLabel
+                    {...stylex.props(styles.label)}
+                    htmlFor={`cooldown-pace`}
+                  >
+                    Pace (RPM)
+                  </InputLabel>
+                  <Input
+                    id={`cooldown-pace`}
+                    {...stylex.props(styles.input)}
+                    type="number"
+                    inputMode="numeric"
+                    value={cooldown.pace}
+                    onChange={(e) =>
+                      setCooldown((prevState) => ({
+                        ...prevState!,
+                        pace: parseFloat(e.target.value),
+                      }))
+                    }
+                    sx={{
+                      textAlign: "center",
+                    }}
+                  />
+                </span>
+              </Box>
+            )}
             <Button
               type="submit"
               {...stylex.props(styles.submit)}
