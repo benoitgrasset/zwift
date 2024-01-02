@@ -35,6 +35,7 @@ export const styles = stylex.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    borderRadius: "5px",
   },
   field: {
     ":hover": {

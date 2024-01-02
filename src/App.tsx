@@ -233,18 +233,20 @@ const App = () => {
                 }}
               />
             </span>
+
+            <Button
+              type="button"
+              role="button"
+              variant="contained"
+              color="secondary"
+              tabIndex={0}
+              {...stylex.props(styles.button)}
+              onClick={handleAddNewField}
+            >
+              + Add
+            </Button>
           </Box>
-          <Button
-            type="button"
-            role="button"
-            variant="contained"
-            color="secondary"
-            tabIndex={0}
-            {...stylex.props(styles.button)}
-            onClick={handleAddNewField}
-          >
-            + Add
-          </Button>
+
           <form noValidate onSubmit={handleSubmit}>
             {fields.map((field, index) => (
               <Box
@@ -329,7 +331,7 @@ const App = () => {
               color="primary"
               startIcon={<MdDownload />}
               sx={{
-                marginTop: "30px",
+                marginTop: "25px",
               }}
             >
               Download
