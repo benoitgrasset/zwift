@@ -14,6 +14,7 @@ import { useState } from "react";
 import { MdAdd, MdDownload } from "react-icons/md";
 import "./App.css";
 import { styles } from "./index.styles";
+import { createXMLString, downLoadFile } from "./utils";
 
 const colorsByPower = {
   z1: "#767676", // grey - recovery
@@ -51,13 +52,13 @@ const getPowerPercentLightColor = (powerPercent: number) => {
   return lightColorsByPower.z6;
 };
 
-type FinalField = {
+export type FinalField = {
   duration: number;
   power: number;
   pace: number;
 };
 
-type Ramp = {
+export type Ramp = {
   duration: string;
   pace: number;
   PowerLow: number;
@@ -74,8 +75,8 @@ const _ftp = parseInt(localStorage.getItem(localStorageKey) || "316"); // intege
 const _duration = "3"; // float
 const _power = 180; // integer
 const _pace = 80; // integer
-const _powerLow = 0.25; // float
-const _powerHigh = 0.75; // float
+const _powerLow = 80; // float
+const _powerHigh = 237; // float
 const _field = {
   duration: _duration,
   power: _power,
@@ -83,20 +84,7 @@ const _field = {
   selected: false,
 };
 
-const space = "        ";
-
 const todayDate = new Date().toLocaleDateString().replaceAll("/", "-");
-
-const downLoadFile = (data: string, fileName: string) => {
-  const url = window.URL.createObjectURL(new Blob([data]));
-  const link = document.createElement("a");
-  link.href = url;
-  link.style.display = "none";
-  link.setAttribute("download", fileName);
-  document.body.appendChild(link);
-  link.click();
-  window.URL.revokeObjectURL(url);
-};
 
 const App = () => {
   const [fields, setFields] = useState([_field]);
@@ -118,43 +106,32 @@ const App = () => {
 
     const finalFields = fields.map((field) => {
       const duration = parseFloat(field.duration) * 60;
-      const pace = field.pace;
       const power = getPower(field.power);
       return {
         ...field,
         power,
         duration,
-        pace,
+      };
+    });
+    const [finalWarmup, finalCooldown] = [warmup, cooldown].map((ramp) => {
+      if (!ramp) return;
+      const duration = (parseFloat(ramp.duration) * 60).toString();
+      const PowerLow = getPower(ramp.PowerLow);
+      const PowerHigh = getPower(ramp.PowerHigh);
+      return {
+        ...ramp,
+        PowerLow,
+        PowerHigh,
+        duration,
       };
     });
     setFinalFields(finalFields);
-    const newXmlString = `
-      <workout_file>
-        <author/>
-        <name>New-Workout-${todayDate}</name>
-        <description/>
-        <sportType>bike</sportType>
-        <durationType>time</durationType>
-        <tags/>
-        <workout>
-          ${
-            warmup
-              ? `<Warmup Duration="${warmup.duration}" PowerLow="${warmup.PowerLow}" PowerHigh="${warmup.PowerHigh}" pace="${warmup.pace}"/>`
-              : ""
-          }
-          ${finalFields
-            .map(({ duration, power, pace }) => {
-              return ` <SteadyState Duration="${duration}" Power="${power}" pace="${pace}"/>\n${space}`;
-            })
-            .join("")}
-          ${
-            cooldown
-              ? `<Cooldown Duration="${cooldown.duration}" PowerLow="${cooldown.PowerLow}" PowerHigh="${cooldown.PowerHigh}" pace="${cooldown.pace}"/>`
-              : ""
-          }
-      </workout>
-      </workout_file>
-`;
+
+    const newXmlString = createXMLString(
+      finalFields,
+      finalWarmup,
+      finalCooldown
+    );
 
     downLoadFile(newXmlString, `New-Workout-${todayDate}.zwo`);
     setXmlString(newXmlString);
