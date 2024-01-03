@@ -932,6 +932,11 @@
   resolved "https://registry.yarnpkg.com/@types/semver/-/semver-7.5.6.tgz#c65b2bfce1bec346582c07724e3f8c1017a20339"
   integrity sha512-dn1l8LaMea/IjDoHNd9J52uBbInB796CDffS6VdIxvqYCPSG0V0DzHp76GpaWnlhg88uYyPbXCDIowa86ybd5A==
 
+"@types/vkbeautify@^0.99.4":
+  version "0.99.4"
+  resolved "https://registry.yarnpkg.com/@types/vkbeautify/-/vkbeautify-0.99.4.tgz#485911b787e55aaa5a238b4038833f43c3f13f4b"
+  integrity sha512-IB/vC9R2BPQJDbKaBwG6B8nnBKeu/RMYKVgVBoSiMjj3CmePsRqHaFNLiYov7sBn+CiGe6eqY9UslPv+TEyjvA==
+
 "@typescript-eslint/eslint-plugin@^6.14.0":
   version "6.16.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/eslint-plugin/-/eslint-plugin-6.16.0.tgz#cc29fbd208ea976de3db7feb07755bba0ce8d8bc"
@@ -2229,6 +2234,11 @@ vite@^5.0.10:
     rollup "^4.2.0"
   optionalDependencies:
     fsevents "~2.3.3"
+
+vkbeautify@^0.99.3:
+  version "0.99.3"
+  resolved "https://registry.yarnpkg.com/vkbeautify/-/vkbeautify-0.99.3.tgz#4769b3238c5d772c6ea967545dd1df5582f23297"
+  integrity sha512-2ozZEFfmVvQcHWoHLNuiKlUfDKlhh4KGsy54U0UrlLMR1SO+XKAIDqBxtBwHgNrekurlJwE8A9K6L49T78ZQ9Q==
 
 which@^2.0.1:
   version "2.0.2"

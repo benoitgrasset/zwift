@@ -1,3 +1,4 @@
+import vkbeautify from "vkbeautify";
 import { FinalField, Ramp } from "../App";
 
 export const downLoadFile = (data: string, fileName: string) => {
@@ -72,6 +73,7 @@ export const createXMLString = (
   workoutFile.appendChild(workoutElement);
 
   const xmlString = new XMLSerializer().serializeToString(xmlDoc);
+  const prettyXmlString = vkbeautify.xml(xmlString);
 
-  return xmlString;
+  return prettyXmlString;
 };
