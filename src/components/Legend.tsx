@@ -16,7 +16,6 @@ const Legend = ({ className }: Props) => {
           gridTemplateRows: "repeat(2, 1fr)",
           gridColumnGap: "0px",
           gridRowGap: "0px",
-          alignItems: "center",
         }}
       >
         {Object.values(labelsByPower).map((label, index) => (

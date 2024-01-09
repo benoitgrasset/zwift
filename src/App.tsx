@@ -194,7 +194,9 @@ const App = () => {
       <h1>Zwift ZWO Editor</h1>
       <Box {...stylex.props(styles.root)}>
         <Box>
-          <Legend />
+          <div style={{ margin: "0 0 10px 0" }}>
+            <Legend />
+          </div>
           <Box {...stylex.props(styles.params)}>
             <ToggleButtonGroup
               value={powerUnit}
