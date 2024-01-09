@@ -13,6 +13,7 @@ import * as stylex from "@stylexjs/stylex";
 import { useState } from "react";
 import { MdAdd, MdDownload } from "react-icons/md";
 import "./App.css";
+import Legend from "./components/Legend";
 import { styles } from "./index.styles";
 import { createXMLString, downLoadFile } from "./utils";
 import {
@@ -193,6 +194,7 @@ const App = () => {
       <h1>Zwift ZWO Editor</h1>
       <Box {...stylex.props(styles.root)}>
         <Box>
+          <Legend />
           <Box {...stylex.props(styles.params)}>
             <ToggleButtonGroup
               value={powerUnit}

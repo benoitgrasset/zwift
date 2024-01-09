@@ -16,6 +16,24 @@ export const lightColorsByPower = {
   z6: "#ff9999", // red - anaerobic
 };
 
+export const labelsByPower = {
+  z1: "Recovery",
+  z2: "Endurance",
+  z3: "Tempo",
+  z4: "Threshold",
+  z5: "VO2Max",
+  z6: "Anaerobic",
+};
+
+export const percentsByPower = {
+  z1: "-60%",
+  z2: "60-75%",
+  z3: "76-89%",
+  z4: "89-104%",
+  z5: "105-118%",
+  z6: "+118%",
+};
+
 export const getPowerPercentColor = (powerPercent: number) => {
   if (powerPercent < 0.6) return colorsByPower.z1;
   if (powerPercent < 0.75) return colorsByPower.z2;
