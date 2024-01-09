@@ -53,13 +53,27 @@ const _field = {
   pace: _pace,
   selected: false,
 };
+const _warmup = {
+  duration: "5",
+  pace: _pace,
+  PowerLow: _powerLow,
+  PowerHigh: _powerHigh,
+  selected: false,
+};
+const _cooldown = {
+  duration: "5",
+  pace: _pace,
+  PowerLow: _powerLow,
+  PowerHigh: _powerHigh,
+  selected: false,
+};
 
 const todayDate = new Date().toLocaleDateString().replaceAll("/", "-");
 
 const App = () => {
   const [fields, setFields] = useState([_field]);
-  const [warmup, setWarmup] = useState<Ramp>();
-  const [cooldown, setCooldown] = useState<Ramp>();
+  const [warmup, setWarmup] = useState<Ramp>(_warmup);
+  const [cooldown, setCooldown] = useState<Ramp>(_cooldown);
   const [finalFields, setFinalFields] = useState<FinalField[]>();
   const [xmlString, setXmlString] = useState("");
   const [powerUnit, setPowerUnit] = useState<PowerUnit>(powerUnits[0]); // watts or percent
@@ -152,41 +166,34 @@ const App = () => {
   };
 
   const duplicateFields = (index: number) => {
-    const selectedFields = fields.filter((field) => field.selected);
-    const newFields = [...fields]
-      .toSpliced(index + 1, 0, ...selectedFields)
+    const selectedFields = fields
+      .filter((field) => field.selected)
       .map((field) => {
         return {
           ...field,
           selected: false,
         };
       });
+    const newFields = [...fields].toSpliced(index + 1, 0, ...selectedFields);
 
     setFields(newFields);
   };
 
   const handleAddNewField = () => setFields([...fields, _field]);
 
-  const handleAddWarmup = () => {
-    const warmup = {
-      duration: "5",
-      pace: _pace,
-      PowerLow: _powerLow,
-      PowerHigh: _powerHigh,
-      selected: false,
-    };
-    setWarmup(warmup);
-  };
+  const nbFields = fields.length;
+  const nbSelectedFields = fields.filter((field) => field.selected).length;
+  const indeterminate = nbSelectedFields > 0 && nbSelectedFields < nbFields;
+  const checked = nbSelectedFields === nbFields;
 
-  const handleAddCooldown = () => {
-    const cooldown = {
-      duration: "5",
-      pace: _pace,
-      PowerLow: _powerLow,
-      PowerHigh: _powerHigh,
-      selected: false,
-    };
-    setCooldown(cooldown);
+  const handleCheckSelectAll = () => {
+    const newFields = fields.map((field) => {
+      return {
+        ...field,
+        selected: !checked,
+      };
+    });
+    setFields(newFields);
   };
 
   return (
@@ -231,6 +238,17 @@ const App = () => {
           </Box>
 
           <Box {...stylex.props(styles.params)}>
+            <span>
+              <Checkbox
+                checked={checked}
+                indeterminate={indeterminate}
+                onChange={handleCheckSelectAll}
+                id="select-all"
+              />
+              <InputLabel htmlFor="select-all" {...stylex.props(styles.label)}>
+                Select All
+              </InputLabel>
+            </span>
             <Button
               type="button"
               role="button"
@@ -240,26 +258,6 @@ const App = () => {
               onClick={handleAddNewField}
             >
               + Add
-            </Button>
-            <Button
-              type="button"
-              role="button"
-              variant="contained"
-              color="secondary"
-              {...stylex.props(styles.button)}
-              onClick={handleAddWarmup}
-            >
-              + Add Warmup
-            </Button>
-            <Button
-              type="button"
-              role="button"
-              variant="contained"
-              color="secondary"
-              {...stylex.props(styles.button)}
-              onClick={handleAddCooldown}
-            >
-              + Add Cooldown
             </Button>
           </Box>
 
@@ -372,7 +370,6 @@ const App = () => {
                 <Checkbox
                   checked={field.selected}
                   onChange={() => handleCheckboxChange(index)}
-                  {...stylex.props(styles.checkbox)}
                 />
                 <span {...stylex.props(styles.field)}>
                   <InputLabel

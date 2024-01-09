@@ -8,7 +8,6 @@ const Legend = ({ className }: Props) => {
   const nbZones = Object.values(labelsByPower).length;
   return (
     <div className={className}>
-      <h2>Legend</h2>
       <div
         style={{
           display: "grid",

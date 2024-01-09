@@ -49,7 +49,6 @@ export const styles = stylex.create({
     boxSizing: "border-box",
     padding: "5px",
   },
-  checkbox: {},
   params: {
     display: "flex",
     alignItems: "center",
