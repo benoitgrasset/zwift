@@ -201,9 +201,7 @@ const App = () => {
       <h1>Zwift ZWO Editor</h1>
       <Box {...stylex.props(styles.root)}>
         <Box>
-          <div style={{ margin: "0 0 10px 0" }}>
-            <Legend />
-          </div>
+          <Legend {...stylex.props(styles.legend)} />
           <Box {...stylex.props(styles.params)}>
             <ToggleButtonGroup
               value={powerUnit}
@@ -237,7 +235,7 @@ const App = () => {
             </span>
           </Box>
 
-          <Box {...stylex.props(styles.params)}>
+          <Box {...stylex.props(styles.interval)}>
             <span>
               <Checkbox
                 checked={checked}
@@ -259,6 +257,7 @@ const App = () => {
             >
               + Add
             </Button>
+            <div />
           </Box>
 
           <form noValidate onSubmit={handleSubmit}>

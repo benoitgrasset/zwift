@@ -18,6 +18,7 @@ export const styles = stylex.create({
     width: "55px",
     height,
     boxSizing: "border-box",
+    textAlign: "center",
   },
   submit: {
     height: "35px",
@@ -29,12 +30,12 @@ export const styles = stylex.create({
     },
   },
   interval: {
-    margin: "10px 0",
+    margin: "10px 3px",
     gap: "10px",
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-around",
+    justifyContent: "space-between",
     borderRadius: "5px",
     minHeight: "42px",
   },
@@ -55,10 +56,14 @@ export const styles = stylex.create({
     justifyContent: "center",
     gap: "50px",
     marginBottom: "10px",
+    position: "relative",
   },
   graph: {
     display: "flex",
     gap: "10px",
     alignItems: "baseline",
+  },
+  legend: {
+    margin: "0 0 10px 0",
   },
 });

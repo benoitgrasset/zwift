@@ -1,5 +1,5 @@
 export const colorsByPower = {
-  z1: "#767676", // grey - recovery
+  z1: "#909090", // grey - recovery
   z2: "#01b2cc", // blue - endurance
   z3: "#5bbe5b", // green - tempo
   z4: "#fbcc42", // yellow - threshold
