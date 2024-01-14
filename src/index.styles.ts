@@ -60,7 +60,7 @@ export const styles = stylex.create({
   },
   graph: {
     display: "flex",
-    gap: "10px",
+    gap: "5px",
     alignItems: "baseline",
   },
   legend: {
