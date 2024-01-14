@@ -11,11 +11,11 @@ import {
 } from "@mui/material";
 import * as stylex from "@stylexjs/stylex";
 import { useState } from "react";
-import { MdAdd, MdDownload } from "react-icons/md";
+import { MdAdd, MdDownload, MdUpload } from "react-icons/md";
 import "./App.css";
 import Legend from "./components/Legend";
 import { styles } from "./index.styles";
-import { createXMLString, downLoadFile } from "./utils";
+import { createXMLString, downLoadFile, parseXMLFile } from "./utils";
 import {
   colorsByPower,
   getPowerPercentColor,
@@ -121,6 +121,21 @@ const App = () => {
     setXmlString(newXmlString);
   };
 
+  const loadFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      throw new Error("No file selected");
+    }
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const xmlString = e.target?.result as string;
+      const { warmup, intervals, cooldown } = parseXMLFile(xmlString);
+      console.log("BG", { warmup, intervals, cooldown });
+    };
+    reader.readAsText(file);
+  };
+
   const handleTextChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     field: "duration" | "pace" | "power",
@@ -179,7 +194,7 @@ const App = () => {
     setFields(newFields);
   };
 
-  const handleAddNewField = () => setFields([...fields, _field]);
+  const addNewField = () => setFields([...fields, _field]);
 
   const nbFields = fields.length;
   const nbSelectedFields = fields.filter((field) => field.selected).length;
@@ -256,15 +271,32 @@ const App = () => {
             </span>
             <Button
               type="button"
-              role="button"
               variant="contained"
               color="primary"
               {...stylex.props(styles.button)}
-              onClick={handleAddNewField}
+              onClick={addNewField}
+              startIcon={<MdAdd />}
             >
-              + Add
+              Add
             </Button>
-            <div />
+            <input
+              accept=".zwo"
+              id="button-file"
+              type="file"
+              hidden
+              onChange={loadFile}
+            />
+            <label htmlFor="button-file">
+              <Button
+                variant="contained"
+                color="primary"
+                {...stylex.props(styles.button)}
+                startIcon={<MdUpload />}
+                component="span"
+              >
+                Upload
+              </Button>
+            </label>
           </Box>
 
           <form noValidate onSubmit={handleSubmit}>

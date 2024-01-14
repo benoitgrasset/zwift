@@ -77,3 +77,34 @@ export const createXMLString = (
 
   return prettyXmlString;
 };
+
+export const parseXMLFile = (xmlString: string) => {
+  const parser = new DOMParser();
+
+  const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+  const intervalsElement = xmlDoc.getElementsByTagName("SteadyState");
+  const warmupElement = xmlDoc.getElementsByTagName("Warmup");
+  const cooldownElement = xmlDoc.getElementsByTagName("Cooldown");
+
+  const intervals = Array.from(intervalsElement).map((interval) => {
+    const duration = interval.getAttribute("Duration");
+    const power = interval.getAttribute("Power");
+    const pace = interval.getAttribute("pace");
+    return { duration, power, pace };
+  });
+  const warmup = Array.from(warmupElement).map((interval) => {
+    const duration = interval.getAttribute("Duration");
+    const PowerLow = interval.getAttribute("PowerLow");
+    const PowerHigh = interval.getAttribute("PowerHigh");
+    const pace = interval.getAttribute("pace");
+    return { duration, PowerLow, PowerHigh, pace };
+  });
+  const cooldown = Array.from(cooldownElement).map((interval) => {
+    const duration = interval.getAttribute("Duration");
+    const PowerLow = interval.getAttribute("PowerLow");
+    const PowerHigh = interval.getAttribute("PowerHigh");
+    const pace = interval.getAttribute("pace");
+    return { duration, PowerLow, PowerHigh, pace };
+  });
+  return { intervals, warmup, cooldown };
+};
