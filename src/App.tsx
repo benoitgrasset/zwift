@@ -186,6 +186,13 @@ const App = () => {
   const indeterminate = nbSelectedFields > 0 && nbSelectedFields < nbFields;
   const checked = nbSelectedFields === nbFields;
 
+  const duration =
+    fields.reduce((acc, field) => {
+      return acc + parseFloat(field.duration);
+    }, 0) +
+    parseFloat(warmup?.duration || "0") +
+    parseFloat(cooldown?.duration || "0");
+
   const handleCheckSelectAll = () => {
     const newFields = fields.map((field) => {
       return {
@@ -528,6 +535,9 @@ const App = () => {
                 </span>
               </Box>
             )}
+            <Box>
+              <span>Total Duration: {duration.toFixed(2)} min</span>
+            </Box>
             <Button
               type="submit"
               {...stylex.props(styles.submit)}
