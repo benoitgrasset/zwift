@@ -130,8 +130,13 @@ const App = () => {
 
     reader.onload = (e) => {
       const xmlString = e.target?.result as string;
-      const { warmup, intervals, cooldown } = parseXMLFile(xmlString);
-      console.log("BG", { warmup, intervals, cooldown });
+      const result = parseXMLFile(xmlString);
+      if (result) {
+        const { intervals, cooldown, warmup } = result;
+        setFields(intervals);
+        setCooldown(cooldown);
+        setWarmup(warmup);
+      }
     };
     reader.readAsText(file);
   };
