@@ -5,6 +5,8 @@ export const colorsByPower = {
   z4: "#fbcc42", // yellow - threshold
   z5: "#fb6418", // orange - vo2max
   z6: "#ff0000", // red - anaerobic
+  warmup: "linear-gradient(to right, #909090, #01b2cc, #5bbe5b, #fbcc42)",
+  cooldown: "linear-gradient(to left, #909090, #01b2cc, #5bbe5b, #fbcc42)",
 };
 
 export const lightColorsByPower = {
@@ -17,12 +19,12 @@ export const lightColorsByPower = {
 };
 
 export const labelsByPower = {
-  z1: "Recovery",
-  z2: "Endurance",
-  z3: "Tempo",
-  z4: "Threshold",
-  z5: "VO2Max",
-  z6: "Anaerobic",
+  z1: "Z1 - Recovery",
+  z2: "Z2 - Endurance",
+  z3: "Z3 - Tempo",
+  z4: "Z4 - Threshold",
+  z5: "Z5 - VO2Max",
+  z6: "Z6 - Anaerobic",
 };
 
 export const percentsByPower = {

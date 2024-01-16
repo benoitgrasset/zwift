@@ -22,3 +22,5 @@ export const getIntensityFactor = (activity: Activity, FTP: number) => {
   if (!FTP || !watts) return null;
   return roundNumber(watts / FTP);
 };
+
+export const getTrainingLoad = () => 0;

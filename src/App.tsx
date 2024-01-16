@@ -21,6 +21,7 @@ import {
   getPowerPercentColor,
   getPowerPercentLightColor,
 } from "./utils/colors";
+import { getTrainingLoad } from "./utils/metrics";
 
 export type FinalField = {
   duration: number;
@@ -44,9 +45,11 @@ const mapPowerUnitToLabel: { [keys in PowerUnit]: string } = {
   percent: "FTP %",
 };
 
-const localStorageKey = "FTP";
+const localStorageKeyFTP = "FTP";
+const localStorageKeyWeight = "weight";
 
-const _ftp = parseInt(localStorage.getItem(localStorageKey) || "316"); // integer
+const _ftp = parseInt(localStorage.getItem(localStorageKeyFTP) || "316"); // integer
+const _weight = parseInt(localStorage.getItem(localStorageKeyWeight) || "80"); // integer
 const _duration = "3"; // float
 const _power = 180; // integer
 const _pace = 80; // integer
@@ -96,6 +99,7 @@ const App = () => {
   const [xmlString, setXmlString] = useState("");
   const [powerUnit, setPowerUnit] = useState<PowerUnit>("watts"); // watts or percent
   const [ftp, setFtp] = useState(_ftp);
+  const [weight, setWeight] = useState(_weight);
 
   /**
    *
@@ -261,6 +265,8 @@ const App = () => {
     parseFloat(warmup?.duration || "0") +
     parseFloat(cooldown?.duration || "0");
 
+  const trainingLoad = getTrainingLoad();
+
   const handleCheckSelectAll = () => {
     const newFields = fields.map((field) => {
       return {
@@ -292,22 +298,40 @@ const App = () => {
               </ToggleButton>
             </ToggleButtonGroup>
 
-            <span>
-              <InputLabel htmlFor="ftp" {...stylex.props(styles.label)}>
-                FTP (Watts)
-              </InputLabel>
-              <Input
-                id="ftp"
-                type="number"
-                {...stylex.props(styles.input)}
-                value={ftp}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setFtp(parseInt(value));
-                  localStorage.setItem(localStorageKey, value);
-                }}
-              />
-            </span>
+            <Box gap={2} display="flex">
+              <span>
+                <InputLabel htmlFor="ftp" {...stylex.props(styles.label)}>
+                  FTP (Watts)
+                </InputLabel>
+                <Input
+                  id="ftp"
+                  type="number"
+                  {...stylex.props(styles.input)}
+                  value={ftp}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFtp(parseInt(value));
+                    localStorage.setItem(localStorageKeyFTP, value);
+                  }}
+                />
+              </span>
+              <span>
+                <InputLabel htmlFor="weight" {...stylex.props(styles.label)}>
+                  Weight (kg)
+                </InputLabel>
+                <Input
+                  id="weight"
+                  type="number"
+                  {...stylex.props(styles.input)}
+                  value={weight}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setWeight(parseInt(value));
+                    localStorage.setItem(localStorageKeyWeight, value);
+                  }}
+                />
+              </span>
+            </Box>
           </Box>
 
           <Box {...stylex.props(styles.interval)}>
@@ -357,7 +381,7 @@ const App = () => {
               <Box
                 {...stylex.props(styles.interval)}
                 sx={{
-                  background: colorsByPower.z1,
+                  background: colorsByPower.warmup,
                 }}
               >
                 <span {...stylex.props(styles.field)}>
@@ -528,7 +552,7 @@ const App = () => {
               <Box
                 {...stylex.props(styles.interval)}
                 sx={{
-                  background: colorsByPower.z1,
+                  background: colorsByPower.cooldown,
                 }}
               >
                 <span {...stylex.props(styles.field)}>
@@ -620,8 +644,9 @@ const App = () => {
                 </span>
               </Box>
             )}
-            <Box>
+            <Box display="flex" gap={2} justifyContent="center">
               <span>Total Duration: {duration.toFixed(1)} min</span>
+              <span>Training Load: {trainingLoad.toFixed(1)}</span>
             </Box>
             <Button
               type="submit"
