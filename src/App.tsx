@@ -39,6 +39,11 @@ export type Ramp = {
 type PowerUnit = "watts" | "percent";
 const powerUnits: PowerUnit[] = ["watts", "percent"];
 
+const mapPowerUnitToLabel: { [keys in PowerUnit]: string } = {
+  watts: "watts",
+  percent: "FTP %",
+};
+
 const localStorageKey = "FTP";
 
 const _ftp = parseInt(localStorage.getItem(localStorageKey) || "316"); // integer
@@ -70,26 +75,48 @@ const _cooldown = {
 
 const todayDate = new Date().toLocaleDateString().replaceAll("/", "-");
 
+/**
+ *
+ * @param duration string in minutes
+ * @returns number in seconds
+ */
+const getDuration = (duration: string) => {
+  return parseFloat(duration) * 60;
+};
+
+const getDurationFromFile = (duration: string) => {
+  return (Number(duration) / 60).toFixed(1);
+};
+
 const App = () => {
   const [fields, setFields] = useState([_field]);
   const [warmup, setWarmup] = useState<Ramp>(_warmup);
   const [cooldown, setCooldown] = useState<Ramp>(_cooldown);
   const [finalFields, setFinalFields] = useState<FinalField[]>();
   const [xmlString, setXmlString] = useState("");
-  const [powerUnit, setPowerUnit] = useState<PowerUnit>(powerUnits[0]); // watts or percent
+  const [powerUnit, setPowerUnit] = useState<PowerUnit>("watts"); // watts or percent
   const [ftp, setFtp] = useState(_ftp);
 
+  /**
+   *
+   * @param power number
+   * @returns number in percent or watts
+   */
   const getPower = (power: number) => {
     return powerUnit === "watts"
       ? Math.round((power / ftp) * 10) / 10
       : power / 100;
   };
 
+  const getPowerFromFile = (power: number) => {
+    return powerUnit === "watts" ? power * ftp : power * 100;
+  };
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const finalFields = fields.map((field) => {
-      const duration = parseFloat(field.duration) * 60;
+      const duration = getDuration(field.duration);
       const power = getPower(field.power);
       return {
         ...field,
@@ -99,7 +126,7 @@ const App = () => {
     });
     const [finalWarmup, finalCooldown] = [warmup, cooldown].map((ramp) => {
       if (!ramp) return;
-      const duration = (parseFloat(ramp.duration) * 60).toString();
+      const duration = getDuration(ramp.duration).toString();
       const PowerLow = getPower(ramp.PowerLow);
       const PowerHigh = getPower(ramp.PowerHigh);
       return {
@@ -133,9 +160,25 @@ const App = () => {
       const result = parseXMLFile(xmlString);
       if (result) {
         const { intervals, cooldown, warmup } = result;
-        setFields(intervals);
-        setCooldown(cooldown);
-        setWarmup(warmup);
+        setFields(
+          intervals.map((interval) => ({
+            ...interval,
+            power: getPowerFromFile(interval.power),
+            duration: getDurationFromFile(interval.duration),
+          }))
+        );
+        setCooldown({
+          ...cooldown,
+          PowerLow: getPowerFromFile(cooldown.PowerLow),
+          PowerHigh: getPowerFromFile(cooldown.PowerHigh),
+          duration: getDurationFromFile(cooldown.duration),
+        });
+        setWarmup({
+          ...warmup,
+          PowerLow: getPowerFromFile(warmup.PowerLow),
+          PowerHigh: getPowerFromFile(warmup.PowerHigh),
+          duration: getDurationFromFile(warmup.duration),
+        });
       }
     };
     reader.readAsText(file);
@@ -159,13 +202,18 @@ const App = () => {
     });
   };
 
-  const togglePowerUnit = () => {
-    setPowerUnit((prevState) => (prevState === "watts" ? "percent" : "watts"));
+  const togglePowerUnit = (
+    _event: React.MouseEvent<HTMLElement>,
+    value: PowerUnit | null
+  ) => {
+    if (value !== null) {
+      setPowerUnit(value);
+    }
     setFields((prevState) => {
       return prevState.map((item) => {
         return {
           ...item,
-          power: 0,
+          power: powerUnit === "watts" ? item.power / ftp : item.power * ftp,
         };
       });
     });
@@ -237,10 +285,10 @@ const App = () => {
               aria-label="Power unit"
             >
               <ToggleButton value={powerUnits[0]} aria-label="Watts">
-                Watts
+                {mapPowerUnitToLabel[powerUnits[0]]}
               </ToggleButton>
               <ToggleButton value={powerUnits[1]} aria-label="FTP %">
-                FTP %
+                {mapPowerUnitToLabel[powerUnits[1]]}
               </ToggleButton>
             </ToggleButtonGroup>
 
@@ -338,7 +386,7 @@ const App = () => {
                     {...stylex.props(styles.label)}
                     htmlFor={`warmup-power-low`}
                   >
-                    Power Low ({powerUnit})
+                    Power Low ({mapPowerUnitToLabel[powerUnit]})
                   </InputLabel>
                   <Input
                     id={`warmup-power-low`}
@@ -359,7 +407,7 @@ const App = () => {
                     {...stylex.props(styles.label)}
                     htmlFor={`warmup-power-high`}
                   >
-                    Power High ({powerUnit})
+                    Power High ({mapPowerUnitToLabel[powerUnit]})
                   </InputLabel>
                   <Input
                     id={`warmup-power-high`}
@@ -435,7 +483,7 @@ const App = () => {
                     {...stylex.props(styles.label)}
                     htmlFor={`power-${index}`}
                   >
-                    Power ({powerUnit})
+                    Power ({mapPowerUnitToLabel[powerUnit]})
                   </InputLabel>
                   <Input
                     id={`power-${index}`}
@@ -509,7 +557,7 @@ const App = () => {
                     {...stylex.props(styles.label)}
                     htmlFor={`cooldown-power-high`}
                   >
-                    Power High ({powerUnit})
+                    Power High ({mapPowerUnitToLabel[powerUnit]})
                   </InputLabel>
                   <Input
                     id={`cooldown-power-high`}
@@ -530,7 +578,7 @@ const App = () => {
                     {...stylex.props(styles.label)}
                     htmlFor={`cooldown-power-low`}
                   >
-                    Power Low ({powerUnit})
+                    Power Low ({mapPowerUnitToLabel[powerUnit]})
                   </InputLabel>
                   <Input
                     id={`cooldown-power-low`}
@@ -573,7 +621,7 @@ const App = () => {
               </Box>
             )}
             <Box>
-              <span>Total Duration: {duration.toFixed(2)} min</span>
+              <span>Total Duration: {duration.toFixed(1)} min</span>
             </Box>
             <Button
               type="submit"
