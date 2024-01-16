@@ -21,6 +21,7 @@ import {
   getPowerPercentColor,
   getPowerPercentLightColor,
 } from "./utils/colors";
+import { roundNumber } from "./utils/maths";
 import { getTrainingLoad } from "./utils/metrics";
 
 export type FinalField = {
@@ -107,9 +108,7 @@ const App = () => {
    * @returns number in percent or watts
    */
   const getPower = (power: number) => {
-    return powerUnit === "watts"
-      ? Math.round((power / ftp) * 10) / 10
-      : power / 100;
+    return powerUnit === "watts" ? roundNumber(power / ftp) : power / 100;
   };
 
   const getPowerFromFile = (power: number) => {
@@ -217,7 +216,10 @@ const App = () => {
       return prevState.map((item) => {
         return {
           ...item,
-          power: powerUnit === "watts" ? item.power / ftp : item.power * ftp,
+          power:
+            powerUnit === "watts"
+              ? roundNumber((item.power / ftp) * 100)
+              : roundNumber((item.power * ftp) / 100),
         };
       });
     });
