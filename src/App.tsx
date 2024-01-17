@@ -2,49 +2,26 @@ import {
   Box,
   Button,
   Checkbox,
-  IconButton,
   Input,
   InputLabel,
   ToggleButton,
   ToggleButtonGroup,
-  Tooltip,
 } from "@mui/material";
 import * as stylex from "@stylexjs/stylex";
 import { useState } from "react";
 import { MdAdd, MdDownload, MdUpload } from "react-icons/md";
 import "./App.css";
+import Field from "./components/Field";
 import Legend from "./components/Legend";
 import { styles } from "./index.styles";
+import { FinalField, PowerUnit, Ramp } from "./types";
 import { createXMLString, downLoadFile, parseXMLFile } from "./utils";
-import {
-  colorsByPower,
-  getPowerPercentColor,
-  getPowerPercentLightColor,
-} from "./utils/colors";
+import { colorsByPower, getPowerPercentColor } from "./utils/colors";
+import { mapPowerUnitToLabel } from "./utils/dictionary";
 import { roundNumber } from "./utils/maths";
 import { getTrainingLoad } from "./utils/metrics";
 
-export type FinalField = {
-  duration: number;
-  power: number;
-  pace: number;
-};
-
-export type Ramp = {
-  duration: string;
-  pace: number;
-  PowerLow: number;
-  PowerHigh: number;
-  selected: boolean;
-};
-
-type PowerUnit = "watts" | "percent";
-const powerUnits: PowerUnit[] = ["watts", "percent"];
-
-const mapPowerUnitToLabel: { [keys in PowerUnit]: string } = {
-  watts: "watts",
-  percent: "FTP %",
-};
+const powerUnits: PowerUnit[] = ["watts", "percent", "wattsByKg"];
 
 const localStorageKeyFTP = "FTP";
 const localStorageKeyWeight = "weight";
@@ -187,24 +164,6 @@ const App = () => {
     reader.readAsText(file);
   };
 
-  const handleTextChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    field: "duration" | "pace" | "power",
-    index: number
-  ) => {
-    setFields((prevState) => {
-      return prevState.map((item, i) => {
-        if (i === index) {
-          return {
-            ...item,
-            [field]: event.target.value,
-          };
-        }
-        return item;
-      });
-    });
-  };
-
   const togglePowerUnit = (
     _event: React.MouseEvent<HTMLElement>,
     value: PowerUnit | null
@@ -225,34 +184,6 @@ const App = () => {
     });
   };
 
-  const handleCheckboxChange = (index: number) => {
-    setFields((prevState) => {
-      return prevState.map((item, i) => {
-        if (i === index) {
-          return {
-            ...item,
-            selected: !item.selected,
-          };
-        }
-        return item;
-      });
-    });
-  };
-
-  const duplicateFields = (index: number) => {
-    const selectedFields = fields
-      .filter((field) => field.selected)
-      .map((field) => {
-        return {
-          ...field,
-          selected: false,
-        };
-      });
-    const newFields = [...fields].toSpliced(index + 1, 0, ...selectedFields);
-
-    setFields(newFields);
-  };
-
   const addNewField = () => setFields([...fields, _field]);
 
   const nbFields = fields.length;
@@ -267,7 +198,10 @@ const App = () => {
     parseFloat(warmup?.duration || "0") +
     parseFloat(cooldown?.duration || "0");
 
-  const trainingLoad = getTrainingLoad();
+  const trainingLoad = fields.reduce((acc, field) => {
+    const power = (field.power * ftp) / 100;
+    return acc + getTrainingLoad(power, parseFloat(field.duration), ftp);
+  }, 0);
 
   const handleCheckSelectAll = () => {
     const newFields = fields.map((field) => {
@@ -297,6 +231,9 @@ const App = () => {
               </ToggleButton>
               <ToggleButton value={powerUnits[1]} aria-label="FTP %">
                 {mapPowerUnitToLabel[powerUnits[1]]}
+              </ToggleButton>
+              <ToggleButton value={powerUnits[2]} aria-label="FTP/kg" disabled>
+                {mapPowerUnitToLabel[powerUnits[2]]}
               </ToggleButton>
             </ToggleButtonGroup>
 
@@ -476,79 +413,15 @@ const App = () => {
               </Box>
             )}
             {fields.map((field, index) => (
-              <Box
-                {...stylex.props(styles.interval)}
-                sx={{
-                  background: field.selected
-                    ? getPowerPercentColor(getPower(field.power))
-                    : getPowerPercentLightColor(getPower(field.power)),
-                }}
-              >
-                <Checkbox
-                  checked={field.selected}
-                  onChange={() => handleCheckboxChange(index)}
-                />
-                <span {...stylex.props(styles.field)}>
-                  <InputLabel
-                    {...stylex.props(styles.label)}
-                    htmlFor={`duration-${index}`}
-                  >
-                    Duration (min)
-                  </InputLabel>
-                  <Input
-                    id={`duration-${index}`}
-                    {...stylex.props(styles.input)}
-                    type="text"
-                    inputMode="decimal"
-                    value={field.duration}
-                    onChange={(e) => handleTextChange(e, "duration", index)}
-                  />
-                </span>
-                <span {...stylex.props(styles.field)}>
-                  <InputLabel
-                    {...stylex.props(styles.label)}
-                    htmlFor={`power-${index}`}
-                  >
-                    Power ({mapPowerUnitToLabel[powerUnit]})
-                  </InputLabel>
-                  <Input
-                    id={`power-${index}`}
-                    {...stylex.props(styles.input)}
-                    type="number"
-                    inputMode="numeric"
-                    value={field.power}
-                    onChange={(e) => handleTextChange(e, "power", index)}
-                  />
-                </span>
-                <span {...stylex.props(styles.field)}>
-                  <InputLabel
-                    {...stylex.props(styles.label)}
-                    htmlFor={`pace-${index}`}
-                  >
-                    Pace (RPM)
-                  </InputLabel>
-                  <Input
-                    id={`pace-${index}`}
-                    {...stylex.props(styles.input)}
-                    type="number"
-                    inputMode="numeric"
-                    value={field.pace}
-                    onChange={(e) => handleTextChange(e, "pace", index)}
-                    sx={{
-                      textAlign: "center",
-                    }}
-                  />
-                </span>
-                <Tooltip title="Duplicate Field">
-                  <IconButton
-                    aria-label="duplicate"
-                    onClick={() => duplicateFields(index)}
-                    disabled={!fields.some((field) => field.selected)}
-                  >
-                    <MdAdd />
-                  </IconButton>
-                </Tooltip>
-              </Box>
+              <Field
+                key={index}
+                index={index}
+                field={field}
+                powerUnit={powerUnit}
+                setFields={setFields}
+                fields={fields}
+                getPower={getPower}
+              />
             ))}
             {cooldown && (
               <Box

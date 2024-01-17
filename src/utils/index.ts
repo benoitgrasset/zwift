@@ -1,5 +1,5 @@
 import vkbeautify from "vkbeautify";
-import { FinalField, Ramp } from "../App";
+import { FinalField, Ramp } from "../types";
 
 export const downLoadFile = (data: string, fileName: string) => {
   const url = window.URL.createObjectURL(new Blob([data]));

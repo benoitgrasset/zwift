@@ -23,4 +23,15 @@ export const getIntensityFactor = (activity: Activity, FTP: number) => {
   return roundNumber(watts / FTP);
 };
 
-export const getTrainingLoad = () => 0;
+export const getIntensityFactorByDuration = (power: number, FTP: number) => {
+  return power / FTP;
+};
+
+export const getTrainingLoad = (
+  power: number,
+  duration: number,
+  FTP: number
+) => {
+  const intensityFactor = getIntensityFactorByDuration(power, FTP);
+  return ((duration * power * intensityFactor) / (FTP * 3600)) * 100;
+};
