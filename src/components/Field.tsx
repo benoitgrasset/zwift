@@ -10,7 +10,7 @@ import * as stylex from "@stylexjs/stylex";
 import { MdAdd } from "react-icons/md";
 import "../App.css";
 import { styles } from "../index.styles";
-import { IField, PowerUnit } from "../types";
+import { Action, IField, IntervalField, PowerUnit } from "../types";
 import {
   getPowerPercentColor,
   getPowerPercentLightColor,
@@ -19,65 +19,44 @@ import { mapPowerUnitToLabel } from "../utils/dictionary";
 
 type Props = {
   field: IField;
-  fields: Array<IField>;
-  getPower: (power: number) => number;
+  disabled: boolean;
   index: number;
   powerUnit: PowerUnit;
-  setFields: React.Dispatch<React.SetStateAction<IField[]>>;
+  dispatch: React.Dispatch<Action>;
 };
 
-const Field = ({
-  field,
-  fields,
-  getPower,
-  index,
-  powerUnit,
-  setFields,
-}: Props) => {
+const Field = ({ field, disabled, index, powerUnit, dispatch }: Props) => {
   const handleTextChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    field: "duration" | "pace" | "power",
+    field: IntervalField,
     index: number
   ) => {
-    setFields((prevState) => {
-      return prevState.map((item, i) => {
-        if (i === index) {
-          return {
-            ...item,
-            [field]: event.target.value,
-          };
-        }
-        return item;
-      });
+    dispatch({
+      type: "UPDATE_FIELD",
+      payload: {
+        index,
+        value: event.target.value,
+        field,
+      },
     });
   };
 
   const handleCheckboxChange = (index: number) => {
-    setFields((prevState) => {
-      return prevState.map((item, i) => {
-        if (i === index) {
-          return {
-            ...item,
-            selected: !item.selected,
-          };
-        }
-        return item;
-      });
+    dispatch({
+      type: "SELECT",
+      payload: {
+        index,
+      },
     });
   };
 
   const duplicateFields = (index: number) => {
-    const selectedFields = fields
-      .filter((field) => field.selected)
-      .map((field) => {
-        return {
-          ...field,
-          selected: false,
-        };
-      });
-    const newFields = [...fields].toSpliced(index + 1, 0, ...selectedFields);
-
-    setFields(newFields);
+    dispatch({
+      type: "DUPLICATE",
+      payload: {
+        index,
+      },
+    });
   };
 
   return (
@@ -85,8 +64,8 @@ const Field = ({
       {...stylex.props(styles.interval)}
       sx={{
         background: field.selected
-          ? getPowerPercentColor(getPower(field.power))
-          : getPowerPercentLightColor(getPower(field.power)),
+          ? getPowerPercentColor(field.power)
+          : getPowerPercentLightColor(field.power),
       }}
     >
       <Checkbox
@@ -118,7 +97,7 @@ const Field = ({
           {...stylex.props(styles.input)}
           type="number"
           inputMode="numeric"
-          value={field.power}
+          value={field.powerToDisplay}
           onChange={(e) => handleTextChange(e, "power", index)}
         />
       </span>
@@ -142,7 +121,7 @@ const Field = ({
         <IconButton
           aria-label="duplicate"
           onClick={() => duplicateFields(index)}
-          disabled={!fields.some((field) => field.selected)}
+          disabled={disabled}
         >
           <MdAdd />
         </IconButton>

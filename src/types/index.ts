@@ -6,7 +6,9 @@ export type FinalField = {
 
 export type IField = {
   duration: string;
+  /** power in percents of FTP */
   power: number;
+  powerToDisplay: number;
   pace: number;
   selected: boolean;
 };
@@ -20,3 +22,7 @@ export type Ramp = {
 };
 
 export type PowerUnit = "watts" | "percent" | "wattsByKg";
+
+export type IntervalField = "duration" | "pace" | "power";
+
+export type { Action } from "./actions";

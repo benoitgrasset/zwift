@@ -8,50 +8,67 @@ import {
   ToggleButtonGroup,
 } from "@mui/material";
 import * as stylex from "@stylexjs/stylex";
-import { useState } from "react";
+import { useReducer, useState } from "react";
 import { MdAdd, MdDownload, MdUpload } from "react-icons/md";
 import "./App.css";
 import Field from "./components/Field";
 import Legend from "./components/Legend";
 import { styles } from "./index.styles";
-import { FinalField, PowerUnit, Ramp } from "./types";
+import { reducer } from "./reducer";
+import { FinalField, IField, PowerUnit, Ramp } from "./types";
 import { createXMLString, downLoadFile, parseXMLFile } from "./utils";
 import { colorsByPower, getPowerPercentColor } from "./utils/colors";
+import converter from "./utils/convert";
 import { mapPowerUnitToLabel } from "./utils/dictionary";
-import { roundNumber } from "./utils/maths";
 import { getTrainingLoad } from "./utils/metrics";
 
 const powerUnits: PowerUnit[] = ["watts", "percent", "wattsByKg"];
 
 const localStorageKeyFTP = "FTP";
 const localStorageKeyWeight = "weight";
+const localStorageKeyPowerUnit = "powerUnit";
 
-const _ftp = parseInt(localStorage.getItem(localStorageKeyFTP) || "316"); // integer
-const _weight = parseInt(localStorage.getItem(localStorageKeyWeight) || "80"); // integer
-const _duration = "3"; // float
-const _power = 180; // integer
-const _pace = 80; // integer
-const _powerLow = 80; // float
-const _powerHigh = 237; // float
-const _field = {
+const _ftp = parseInt(localStorage.getItem(localStorageKeyFTP) || "316");
+const _weight = parseInt(localStorage.getItem(localStorageKeyWeight) || "80");
+const _duration = "3";
+const _power = 180;
+const _pace = 80;
+const _powerLow = 80;
+const _powerHigh = 237;
+const _field: IField = {
   duration: _duration,
-  power: _power,
+  power: _power / _ftp,
+  powerToDisplay: _power,
   pace: _pace,
   selected: false,
 };
-const _warmup = {
+const _warmup: Ramp = {
   duration: "5",
   pace: _pace,
   PowerLow: _powerLow,
   PowerHigh: _powerHigh,
   selected: false,
 };
-const _cooldown = {
+const _cooldown: Ramp = {
   duration: "5",
   pace: _pace,
   PowerLow: _powerLow,
   PowerHigh: _powerHigh,
   selected: false,
+};
+
+export type State = {
+  weight: number;
+  ftp: number;
+  powerUnit: PowerUnit;
+  fields: IField[];
+};
+
+const initialState: State = {
+  weight: _weight,
+  ftp: _ftp,
+  powerUnit: "watts",
+  fields: [_field],
 };
 
 const todayDate = new Date().toLocaleDateString().replaceAll("/", "-");
@@ -70,56 +87,43 @@ const getDurationFromFile = (duration: string) => {
 };
 
 const App = () => {
-  const [fields, setFields] = useState([_field]);
+  const [state, dispatch] = useReducer(reducer, initialState);
   const [warmup, setWarmup] = useState<Ramp>(_warmup);
   const [cooldown, setCooldown] = useState<Ramp>(_cooldown);
   const [finalFields, setFinalFields] = useState<FinalField[]>();
   const [xmlString, setXmlString] = useState("");
-  const [powerUnit, setPowerUnit] = useState<PowerUnit>("watts"); // watts or percent
-  const [ftp, setFtp] = useState(_ftp);
-  const [weight, setWeight] = useState(_weight);
 
-  /**
-   *
-   * @param power number
-   * @returns number in percent or watts
-   */
-  const getPower = (power: number) => {
-    return powerUnit === "watts" ? roundNumber(power / ftp) : power / 100;
-  };
+  const { fields, powerUnit, weight, ftp } = state;
+
+  const powerConverter = converter(ftp, weight);
 
   const getPowerFromFile = (power: number) => {
-    return powerUnit === "watts" ? power * ftp : power * 100;
+    return powerConverter(power).from("percent").to(powerUnit);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const finalFields = fields.map((field) => {
-      const duration = getDuration(field.duration);
-      const power = getPower(field.power);
+    const newFinalFields = fields.map((field) => {
       return {
         ...field,
-        power,
-        duration,
+        power: field.power,
+        duration: getDuration(field.duration),
       };
     });
     const [finalWarmup, finalCooldown] = [warmup, cooldown].map((ramp) => {
       if (!ramp) return;
-      const duration = getDuration(ramp.duration).toString();
-      const PowerLow = getPower(ramp.PowerLow);
-      const PowerHigh = getPower(ramp.PowerHigh);
       return {
         ...ramp,
-        PowerLow,
-        PowerHigh,
-        duration,
+        PowerLow: powerConverter(ramp.PowerLow).from(powerUnit).to("percent"),
+        PowerHigh: powerConverter(ramp.PowerHigh).from(powerUnit).to("percent"),
+        duration: getDuration(ramp.duration).toString(),
       };
     });
-    setFinalFields(finalFields);
+    setFinalFields(newFinalFields);
 
     const newXmlString = createXMLString(
-      finalFields,
+      newFinalFields,
       finalWarmup,
       finalCooldown
     );
@@ -140,25 +144,27 @@ const App = () => {
       const result = parseXMLFile(xmlString);
       if (result) {
         const { intervals, cooldown, warmup } = result;
-        setFields(
-          intervals.map((interval) => ({
-            ...interval,
-            power: getPowerFromFile(interval.power),
-            duration: getDurationFromFile(interval.duration),
-          }))
-        );
-        setCooldown({
-          ...cooldown,
-          PowerLow: getPowerFromFile(cooldown.PowerLow),
-          PowerHigh: getPowerFromFile(cooldown.PowerHigh),
-          duration: getDurationFromFile(cooldown.duration),
-        });
-        setWarmup({
-          ...warmup,
-          PowerLow: getPowerFromFile(warmup.PowerLow),
-          PowerHigh: getPowerFromFile(warmup.PowerHigh),
-          duration: getDurationFromFile(warmup.duration),
-        });
+        const newFields = intervals.map((interval) => ({
+          ...interval,
+          power: interval.power,
+          powerToDisplay: getPowerFromFile(interval.power),
+          duration: getDurationFromFile(interval.duration),
+        }));
+        dispatch({ type: "LOAD_FILE", payload: { fields: newFields } });
+        cooldown &&
+          setCooldown({
+            ...cooldown,
+            PowerLow: getPowerFromFile(cooldown.PowerLow),
+            PowerHigh: getPowerFromFile(cooldown.PowerHigh),
+            duration: getDurationFromFile(cooldown.duration),
+          });
+        warmup &&
+          setWarmup({
+            ...warmup,
+            PowerLow: getPowerFromFile(warmup.PowerLow),
+            PowerHigh: getPowerFromFile(warmup.PowerHigh),
+            duration: getDurationFromFile(warmup.duration),
+          });
       }
     };
     reader.readAsText(file);
@@ -169,22 +175,13 @@ const App = () => {
     value: PowerUnit | null
   ) => {
     if (value !== null) {
-      setPowerUnit(value);
+      dispatch({ type: "TOGGLE_POWER_UNIT", payload: { unit: value } });
+      localStorage.setItem(localStorageKeyPowerUnit, value);
     }
-    setFields((prevState) => {
-      return prevState.map((item) => {
-        return {
-          ...item,
-          power:
-            powerUnit === "watts"
-              ? roundNumber((item.power / ftp) * 100)
-              : roundNumber((item.power * ftp) / 100),
-        };
-      });
-    });
   };
 
-  const addNewField = () => setFields([...fields, _field]);
+  const addNewField = () =>
+    dispatch({ type: "ADD", payload: { field: _field } });
 
   const nbFields = fields.length;
   const nbSelectedFields = fields.filter((field) => field.selected).length;
@@ -204,13 +201,7 @@ const App = () => {
   }, 0);
 
   const handleCheckSelectAll = () => {
-    const newFields = fields.map((field) => {
-      return {
-        ...field,
-        selected: !checked,
-      };
-    });
-    setFields(newFields);
+    dispatch({ type: "SELECT_ALL", payload: { checked } });
   };
 
   return (
@@ -232,7 +223,7 @@ const App = () => {
               <ToggleButton value={powerUnits[1]} aria-label="FTP %">
                 {mapPowerUnitToLabel[powerUnits[1]]}
               </ToggleButton>
-              <ToggleButton value={powerUnits[2]} aria-label="FTP/kg" disabled>
+              <ToggleButton value={powerUnits[2]} aria-label="FTP/kg">
                 {mapPowerUnitToLabel[powerUnits[2]]}
               </ToggleButton>
             </ToggleButtonGroup>
@@ -249,7 +240,10 @@ const App = () => {
                   value={ftp}
                   onChange={(e) => {
                     const value = e.target.value;
-                    setFtp(parseInt(value));
+                    dispatch({
+                      type: "SET_FTP",
+                      payload: { ftp: parseInt(value) },
+                    });
                     localStorage.setItem(localStorageKeyFTP, value);
                   }}
                 />
@@ -265,7 +259,10 @@ const App = () => {
                   value={weight}
                   onChange={(e) => {
                     const value = e.target.value;
-                    setWeight(parseInt(value));
+                    dispatch({
+                      type: "SET_WEIGHT",
+                      payload: { weight: parseInt(value) },
+                    });
                     localStorage.setItem(localStorageKeyWeight, value);
                   }}
                 />
@@ -418,9 +415,8 @@ const App = () => {
                 index={index}
                 field={field}
                 powerUnit={powerUnit}
-                setFields={setFields}
-                fields={fields}
-                getPower={getPower}
+                dispatch={dispatch}
+                disabled={!fields.some((field) => field.selected)}
               />
             ))}
             {cooldown && (
@@ -545,20 +541,22 @@ const App = () => {
             {...stylex.props(styles.textArea)}
           />
           <Box {...stylex.props(styles.graph)}>
-            {finalFields?.map(({ power, duration }, number) => {
-              const height = power * 50;
-              const width = (duration / 60) * 6;
-              return (
-                <Box
-                  key={number}
-                  style={{
-                    background: getPowerPercentColor(power),
-                    width: `${width}px`,
-                    height: `${height}px`,
-                  }}
-                />
-              );
-            })}
+            {finalFields
+              ? finalFields.map(({ power, duration }, number) => {
+                  const height = power * 50;
+                  const width = (duration / 60) * 6;
+                  return (
+                    <Box
+                      key={number}
+                      style={{
+                        background: getPowerPercentColor(power),
+                        width: `${width}px`,
+                        height: `${height}px`,
+                      }}
+                    />
+                  );
+                })
+              : "No workout loaded"}
           </Box>
         </Box>
       </Box>

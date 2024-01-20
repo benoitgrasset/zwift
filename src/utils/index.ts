@@ -92,20 +92,24 @@ export const parseXMLFile = (xmlString: string) => {
     const pace = Number(interval.getAttribute("pace") || "80");
     return { duration, power, pace, selected: false };
   });
-  const warmup = Array.from(warmupElement).map((interval) => {
-    const duration = interval.getAttribute("Duration") || "3";
-    const PowerLow = Number(interval.getAttribute("PowerLow") || "80");
-    const PowerHigh = Number(interval.getAttribute("PowerHigh") || "237");
-    const pace = Number(interval.getAttribute("pace") || "80");
-    return { duration, PowerLow, PowerHigh, pace, selected: false };
-  })[0];
-  const cooldown = Array.from(cooldownElement).map((interval) => {
-    const duration = interval.getAttribute("Duration") || "3";
-    const PowerLow = Number(interval.getAttribute("PowerLow") || "80");
-    const PowerHigh = Number(interval.getAttribute("PowerHigh") || "237");
-    const pace = Number(interval.getAttribute("pace") || "80");
-    return { duration, PowerLow, PowerHigh, pace, selected: false };
-  })[0];
+  const warmup =
+    warmupElement &&
+    Array.from(warmupElement).map((interval) => {
+      const duration = interval.getAttribute("Duration") || "3";
+      const PowerLow = Number(interval.getAttribute("PowerLow") || "80");
+      const PowerHigh = Number(interval.getAttribute("PowerHigh") || "237");
+      const pace = Number(interval.getAttribute("pace") || "80");
+      return { duration, PowerLow, PowerHigh, pace, selected: false };
+    })[0];
+  const cooldown =
+    cooldownElement &&
+    Array.from(cooldownElement).map((interval) => {
+      const duration = interval.getAttribute("Duration") || "3";
+      const PowerLow = Number(interval.getAttribute("PowerLow") || "80");
+      const PowerHigh = Number(interval.getAttribute("PowerHigh") || "237");
+      const pace = Number(interval.getAttribute("pace") || "80");
+      return { duration, PowerLow, PowerHigh, pace, selected: false };
+    })[0];
   if (!intervals) return null;
   return { intervals, warmup, cooldown };
 };
