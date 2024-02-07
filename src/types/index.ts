@@ -5,7 +5,7 @@ export type FinalField = {
 };
 
 export type IField = {
-  duration: string;
+  duration: string | undefined;
   /** power in percents of FTP */
   power: number;
   powerToDisplay: number;

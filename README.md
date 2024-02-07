@@ -7,5 +7,3 @@ Half & Full Ironman with Beyond The Line Zwift
 Olivier Beyond The Line
 
 ## TODO
-
-- [ ] `finalFields`

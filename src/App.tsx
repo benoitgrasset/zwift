@@ -9,13 +9,13 @@ import {
 } from "@mui/material";
 import * as stylex from "@stylexjs/stylex";
 import { useReducer, useState } from "react";
-import { MdAdd, MdDownload, MdUpload } from "react-icons/md";
+import { MdAdd, MdDownload, MdPreview, MdUpload } from "react-icons/md";
 import "./App.css";
 import Field from "./components/Field";
 import Legend from "./components/Legend";
 import { styles } from "./index.styles";
 import { reducer } from "./reducer";
-import { FinalField, IField, PowerUnit, Ramp } from "./types";
+import { IField, PowerUnit, Ramp } from "./types";
 import { createXMLString, downLoadFile, parseXMLFile } from "./utils";
 import { colorsByPower, getPowerPercentColor } from "./utils/colors";
 import converter from "./utils/convert";
@@ -83,14 +83,13 @@ const getDuration = (duration: string) => {
 };
 
 const getDurationFromFile = (duration: string) => {
-  return (Number(duration) / 60).toFixed(1);
+  return (parseFloat(duration) / 60).toFixed(1);
 };
 
 const App = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [warmup, setWarmup] = useState<Ramp>(_warmup);
   const [cooldown, setCooldown] = useState<Ramp>(_cooldown);
-  const [finalFields, setFinalFields] = useState<FinalField[]>();
   const [xmlString, setXmlString] = useState("");
 
   const { fields, powerUnit, weight, ftp } = state;
@@ -101,14 +100,12 @@ const App = () => {
     return powerConverter(power).from("percent").to(powerUnit);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
+  const getXMLString = () => {
     const newFinalFields = fields.map((field) => {
       return {
         ...field,
         power: field.power,
-        duration: getDuration(field.duration),
+        duration: getDuration(field.duration || "0"),
       };
     });
     const [finalWarmup, finalCooldown] = [warmup, cooldown].map((ramp) => {
@@ -120,7 +117,6 @@ const App = () => {
         duration: getDuration(ramp.duration).toString(),
       };
     });
-    setFinalFields(newFinalFields);
 
     const newXmlString = createXMLString(
       newFinalFields,
@@ -128,7 +124,19 @@ const App = () => {
       finalCooldown
     );
 
+    return newXmlString;
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const newXmlString = getXMLString();
     downLoadFile(newXmlString, `New-Workout-${todayDate}.zwo`);
+    setXmlString(newXmlString);
+  };
+
+  const handlePreview = () => {
+    const newXmlString = getXMLString();
     setXmlString(newXmlString);
   };
 
@@ -190,14 +198,14 @@ const App = () => {
 
   const duration =
     fields.reduce((acc, field) => {
-      return acc + parseFloat(field.duration);
+      return acc + parseFloat(field.duration || "0");
     }, 0) +
     parseFloat(warmup?.duration || "0") +
     parseFloat(cooldown?.duration || "0");
 
   const trainingLoad = fields.reduce((acc, field) => {
     const power = (field.power * ftp) / 100;
-    return acc + getTrainingLoad(power, parseFloat(field.duration), ftp);
+    return acc + getTrainingLoad(power, parseFloat(field.duration || "0"), ftp);
   }, 0);
 
   const handleCheckSelectAll = () => {
@@ -291,6 +299,16 @@ const App = () => {
               startIcon={<MdAdd />}
             >
               Add
+            </Button>
+            <Button
+              type="button"
+              variant="contained"
+              color="primary"
+              {...stylex.props(styles.button)}
+              onClick={handlePreview}
+              startIcon={<MdPreview />}
+            >
+              Preview
             </Button>
             <input
               accept=".zwo"
@@ -541,10 +559,10 @@ const App = () => {
             {...stylex.props(styles.textArea)}
           />
           <Box {...stylex.props(styles.graph)}>
-            {finalFields
-              ? finalFields.map(({ power, duration }, number) => {
+            {fields
+              ? fields.map(({ power, duration }, number) => {
                   const height = power * 50;
-                  const width = (duration / 60) * 6;
+                  const width = parseFloat(duration || "0") * 6;
                   return (
                     <Box
                       key={number}

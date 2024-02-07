@@ -88,26 +88,26 @@ export const parseXMLFile = (xmlString: string) => {
 
   const intervals = Array.from(intervalsElement).map((interval) => {
     const duration = interval.getAttribute("Duration") || "3";
-    const power = Number(interval.getAttribute("Power") || "180");
-    const pace = Number(interval.getAttribute("pace") || "80");
+    const power = parseFloat(interval.getAttribute("Power") || "180");
+    const pace = parseFloat(interval.getAttribute("pace") || "80");
     return { duration, power, pace, selected: false };
   });
   const warmup =
     warmupElement &&
     Array.from(warmupElement).map((interval) => {
       const duration = interval.getAttribute("Duration") || "3";
-      const PowerLow = Number(interval.getAttribute("PowerLow") || "80");
-      const PowerHigh = Number(interval.getAttribute("PowerHigh") || "237");
-      const pace = Number(interval.getAttribute("pace") || "80");
+      const PowerLow = parseFloat(interval.getAttribute("PowerLow") || "80");
+      const PowerHigh = parseFloat(interval.getAttribute("PowerHigh") || "237");
+      const pace = parseFloat(interval.getAttribute("pace") || "80");
       return { duration, PowerLow, PowerHigh, pace, selected: false };
     })[0];
   const cooldown =
     cooldownElement &&
     Array.from(cooldownElement).map((interval) => {
       const duration = interval.getAttribute("Duration") || "3";
-      const PowerLow = Number(interval.getAttribute("PowerLow") || "80");
-      const PowerHigh = Number(interval.getAttribute("PowerHigh") || "237");
-      const pace = Number(interval.getAttribute("pace") || "80");
+      const PowerLow = parseFloat(interval.getAttribute("PowerLow") || "80");
+      const PowerHigh = parseFloat(interval.getAttribute("PowerHigh") || "237");
+      const pace = parseFloat(interval.getAttribute("pace") || "80");
       return { duration, PowerLow, PowerHigh, pace, selected: false };
     })[0];
   if (!intervals) return null;
