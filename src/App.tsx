@@ -217,7 +217,7 @@ const App = () => {
       <h1>Zwift ZWO Editor</h1>
       <Box {...stylex.props(styles.root)}>
         <Box>
-          <Legend {...stylex.props(styles.legend)} />
+          <Legend ftp={ftp} {...stylex.props(styles.legend)} />
           <Box {...stylex.props(styles.params)}>
             <ToggleButtonGroup
               value={powerUnit}

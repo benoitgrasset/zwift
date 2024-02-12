@@ -93,11 +93,23 @@ export const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         weight: payload.weight,
+        fields: state.fields.map((field) => ({
+          ...field,
+          powerToDisplay: powerConverter(field.power)
+            .from("percent")
+            .to(powerUnit),
+        })),
       };
     case "SET_FTP":
       return {
         ...state,
         ftp: payload.ftp,
+        fields: state.fields.map((field) => ({
+          ...field,
+          powerToDisplay: powerConverter(field.power)
+            .from("percent")
+            .to(powerUnit),
+        })),
       };
     case "LOAD_FILE":
       return {

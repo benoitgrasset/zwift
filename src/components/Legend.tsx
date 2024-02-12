@@ -1,10 +1,21 @@
+import { CSSProperties } from "react";
 import { colorsByPower, labelsByPower, percentsByPower } from "../utils/colors";
+import { roundNumber } from "../utils/maths";
 
 type Props = {
+  ftp: number;
   className?: string;
 };
 
-const Legend = ({ className }: Props) => {
+const style: CSSProperties = {
+  padding: "0.5em",
+  height: "30px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+};
+
+const Legend = ({ className, ftp }: Props) => {
   const nbZones = Object.values(labelsByPower).length;
   return (
     <div className={className}>
@@ -12,7 +23,7 @@ const Legend = ({ className }: Props) => {
         style={{
           display: "grid",
           gridTemplateColumns: `repeat(${nbZones}, 1fr)`,
-          gridTemplateRows: "repeat(2, 1fr)",
+          gridTemplateRows: "repeat(3, 1fr)",
           gridColumnGap: "0px",
           gridRowGap: "0px",
         }}
@@ -22,8 +33,7 @@ const Legend = ({ className }: Props) => {
             key={index}
             style={{
               background: "lightgrey",
-              padding: "0.5em",
-              textAlign: "center",
+              ...style,
             }}
           >
             {label}
@@ -34,11 +44,22 @@ const Legend = ({ className }: Props) => {
             key={index}
             style={{
               background: Object.values(colorsByPower)[index],
-              padding: "0.5em",
-              textAlign: "center",
+              ...style,
             }}
           >
             {percent}
+          </div>
+        ))}
+        {Object.values(percentsByPower).map((percent, index) => (
+          <div
+            key={index}
+            style={{
+              background: Object.values(colorsByPower)[index],
+              ...style,
+            }}
+          >
+            {roundNumber((parseFloat(percent.split("-")[0]) / 100) * ftp)}W-
+            {roundNumber((parseFloat(percent.split("-")[1]) / 100) * ftp)}W
           </div>
         ))}
       </div>
