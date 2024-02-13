@@ -8,7 +8,7 @@ import {
   ToggleButtonGroup,
 } from "@mui/material";
 import * as stylex from "@stylexjs/stylex";
-import { useReducer, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { MdAdd, MdDownload, MdPreview, MdUpload } from "react-icons/md";
 import "./App.css";
 import Field from "./components/Field";
@@ -99,6 +99,20 @@ const App = () => {
   const getPowerFromFile = (power: number) => {
     return powerConverter(power).from("percent").to(powerUnit);
   };
+
+  useEffect(() => {
+    const newFields = fields.map((field) => {
+      return {
+        ...field,
+        powerToDisplay: powerConverter(field.power)
+          .from("percent")
+          .to(powerUnit),
+      };
+    });
+
+    dispatch({ type: "LOAD_FILE", payload: { fields: newFields } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [powerUnit, weight, ftp]);
 
   const getXMLString = () => {
     const newFinalFields = fields.map((field) => {

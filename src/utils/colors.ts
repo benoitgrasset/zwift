@@ -30,9 +30,9 @@ export const labelsByPower = {
 export const percentsByPower = {
   z1: "-60%",
   z2: "60-75%",
-  z3: "76-89%",
+  z3: "75-89%",
   z4: "89-104%",
-  z5: "105-118%",
+  z5: "104-118%",
   z6: "+118%",
 };
 

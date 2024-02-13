@@ -7,7 +7,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import * as stylex from "@stylexjs/stylex";
-import { MdAdd } from "react-icons/md";
+import { MdAdd, MdDelete } from "react-icons/md";
 import "../App.css";
 import { styles } from "../index.styles";
 import { Action, IField, IntervalField, PowerUnit } from "../types";
@@ -117,15 +117,32 @@ const Field = ({ field, disabled, index, powerUnit, dispatch }: Props) => {
           }}
         />
       </span>
-      <Tooltip title="Duplicate Field">
-        <IconButton
-          aria-label="duplicate"
-          onClick={() => duplicateFields(index)}
-          disabled={disabled}
-        >
-          <MdAdd />
-        </IconButton>
-      </Tooltip>
+      <span>
+        <Tooltip title="Delete Field">
+          <IconButton
+            aria-label="delete"
+            onClick={() =>
+              dispatch({
+                type: "DELETE",
+                payload: {
+                  index,
+                },
+              })
+            }
+          >
+            <MdDelete />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Duplicate Field">
+          <IconButton
+            aria-label="duplicate"
+            onClick={() => duplicateFields(index)}
+            disabled={disabled}
+          >
+            <MdAdd />
+          </IconButton>
+        </Tooltip>
+      </span>
     </Box>
   );
 };

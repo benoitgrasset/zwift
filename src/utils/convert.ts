@@ -59,11 +59,6 @@ export class Converter {
     }
   }
 
-  // value(value: number): this {
-  //   this.val = value;
-  //   return this;
-  // }
-
   from(from: PowerUnit): this {
     this.origin = from;
 

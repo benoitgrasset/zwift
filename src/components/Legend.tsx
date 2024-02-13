@@ -50,18 +50,27 @@ const Legend = ({ className, ftp }: Props) => {
             {percent}
           </div>
         ))}
-        {Object.values(percentsByPower).map((percent, index) => (
-          <div
-            key={index}
-            style={{
-              background: Object.values(colorsByPower)[index],
-              ...style,
-            }}
-          >
-            {roundNumber((parseFloat(percent.split("-")[0]) / 100) * ftp)}W-
-            {roundNumber((parseFloat(percent.split("-")[1]) / 100) * ftp)}W
-          </div>
-        ))}
+        {Object.values(percentsByPower).map((percent, index) => {
+          const min = roundNumber(
+            (parseFloat(percent.split("-")[0]) / 100) * ftp
+          );
+          const max = roundNumber(
+            (parseFloat(percent.split("-")[1]) / 100) * ftp
+          );
+          return (
+            <div
+              key={index}
+              style={{
+                background: Object.values(colorsByPower)[index],
+                ...style,
+              }}
+            >
+              {min ? `${min}W` : ""}
+              {min && max ? "-" : ""}
+              {max ? `${max}W` : ""}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
