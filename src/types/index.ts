@@ -6,8 +6,9 @@ export type FinalField = {
 
 export type IField = {
   duration: string | undefined;
-  /** power in percents of FTP */
+  /** power in Watts */
   power: number;
+  /** power in the unit chosen */
   powerToDisplay: number;
   pace: number;
   selected: boolean;

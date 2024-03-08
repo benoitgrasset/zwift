@@ -20,7 +20,7 @@ export class Converter {
       case "watts":
         return value;
       case "percent":
-        return value / this.ftp;
+        return (value / this.ftp) * 100;
       case "wattsByKg":
         return value / this.weight;
     }
@@ -29,11 +29,11 @@ export class Converter {
   private convertFromPercent(value: number, destination: PowerUnit): number {
     switch (destination) {
       case "watts":
-        return value * this.ftp;
+        return (value * this.ftp) / 100;
       case "percent":
         return value;
       case "wattsByKg":
-        return (value * this.ftp) / this.weight;
+        return (value * this.ftp) / (this.weight * 100);
     }
   }
 
@@ -42,7 +42,7 @@ export class Converter {
       case "watts":
         return value * this.ftp;
       case "percent":
-        return (value * this.weight) / this.ftp;
+        return ((value * this.weight) / this.ftp) * 100;
       case "wattsByKg":
         return value;
     }
@@ -82,7 +82,7 @@ export class Converter {
 
     const result = this.convert(this.val, this.origin, this.destination);
 
-    return result;
+    return Math.round(result);
   }
 }
 

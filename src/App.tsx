@@ -2,15 +2,18 @@ import {
   Box,
   Button,
   Checkbox,
+  IconButton,
   Input,
   InputLabel,
   ToggleButton,
   ToggleButtonGroup,
+  Tooltip,
 } from "@mui/material";
 import * as stylex from "@stylexjs/stylex";
 import { useEffect, useReducer, useState } from "react";
-import { MdAdd, MdDownload, MdPreview, MdUpload } from "react-icons/md";
+import { MdDelete, MdDownload, MdPreview, MdUpload } from "react-icons/md";
 import "./App.css";
+import ActionSelector from "./components/ActionSelector";
 import Field from "./components/Field";
 import Legend from "./components/Legend";
 import { styles } from "./index.styles";
@@ -37,7 +40,7 @@ const _powerLow = 80;
 const _powerHigh = 237;
 const _field: IField = {
   duration: _duration,
-  power: _power / _ftp,
+  power: _power,
   powerToDisplay: _power,
   pace: _pace,
   selected: false,
@@ -62,6 +65,8 @@ export type State = {
   ftp: number;
   powerUnit: PowerUnit;
   fields: IField[];
+  warmup?: Ramp;
+  cooldown?: Ramp;
 };
 
 const initialState: State = {
@@ -69,6 +74,8 @@ const initialState: State = {
   ftp: _ftp,
   powerUnit: "watts",
   fields: [_field],
+  warmup: _warmup,
+  cooldown: _cooldown,
 };
 
 const todayDate = new Date().toLocaleDateString().replaceAll("/", "-");
@@ -100,13 +107,19 @@ const App = () => {
     return powerConverter(power).from("percent").to(powerUnit);
   };
 
+  const getPowerFromOrigin = (power: number) => {
+    return powerConverter(power).from("watts").to(powerUnit);
+  };
+
+  const getPowerToFile = (power: number) => {
+    return powerConverter(power).from(powerUnit).to("percent");
+  };
+
   useEffect(() => {
     const newFields = fields.map((field) => {
       return {
         ...field,
-        powerToDisplay: powerConverter(field.power)
-          .from("percent")
-          .to(powerUnit),
+        powerToDisplay: powerConverter(field.power).from("watts").to(powerUnit),
       };
     });
 
@@ -118,7 +131,7 @@ const App = () => {
     const newFinalFields = fields.map((field) => {
       return {
         ...field,
-        power: field.power,
+        power: getPowerToFile(field.powerToDisplay),
         duration: getDuration(field.duration || "0"),
       };
     });
@@ -126,8 +139,8 @@ const App = () => {
       if (!ramp) return;
       return {
         ...ramp,
-        PowerLow: powerConverter(ramp.PowerLow).from(powerUnit).to("percent"),
-        PowerHigh: powerConverter(ramp.PowerHigh).from(powerUnit).to("percent"),
+        PowerLow: getPowerToFile(ramp.PowerLow),
+        PowerHigh: getPowerToFile(ramp.PowerHigh),
         duration: getDuration(ramp.duration).toString(),
       };
     });
@@ -203,7 +216,21 @@ const App = () => {
   };
 
   const addNewField = () =>
-    dispatch({ type: "ADD", payload: { field: _field } });
+    dispatch({
+      type: "ADD",
+      payload: {
+        field: {
+          ..._field,
+          powerToDisplay: getPowerFromOrigin(_field.powerToDisplay),
+        },
+      },
+    });
+
+  const addNewWarmup = () =>
+    dispatch({ type: "ADD_RAMP", payload: { warmup: { ..._warmup } } });
+
+  const addNewCooldown = () =>
+    dispatch({ type: "ADD_RAMP", payload: { cooldown: { ..._cooldown } } });
 
   const nbFields = fields.length;
   const nbSelectedFields = fields.filter((field) => field.selected).length;
@@ -304,16 +331,11 @@ const App = () => {
                 Select All
               </InputLabel>
             </span>
-            <Button
-              type="button"
-              variant="contained"
-              color="primary"
-              {...stylex.props(styles.button)}
-              onClick={addNewField}
-              startIcon={<MdAdd />}
-            >
-              Add
-            </Button>
+            <ActionSelector
+              addNewField={addNewField}
+              addNewCooldown={addNewCooldown}
+              addNewWarmup={addNewWarmup}
+            />
             <Button
               type="button"
               variant="contained"
@@ -439,6 +461,16 @@ const App = () => {
                     }}
                   />
                 </span>
+                <Tooltip title="Delete Warmup">
+                  <IconButton
+                    aria-label="delete"
+                    onClick={() =>
+                      dispatch({ type: "DELETE_WARMUP", payload: undefined })
+                    }
+                  >
+                    <MdDelete />
+                  </IconButton>
+                </Tooltip>
               </Box>
             )}
             {fields.map((field, index) => (
@@ -449,6 +481,7 @@ const App = () => {
                 powerUnit={powerUnit}
                 dispatch={dispatch}
                 disabled={!fields.some((field) => field.selected)}
+                ftp={ftp}
               />
             ))}
             {cooldown && (
@@ -545,6 +578,16 @@ const App = () => {
                     }}
                   />
                 </span>
+                <Tooltip title="Delete Cooldown">
+                  <IconButton
+                    aria-label="delete"
+                    onClick={() =>
+                      dispatch({ type: "DELETE_COOLDOWN", payload: undefined })
+                    }
+                  >
+                    <MdDelete />
+                  </IconButton>
+                </Tooltip>
               </Box>
             )}
             <Box display="flex" gap={2} justifyContent="center">
@@ -565,7 +608,12 @@ const App = () => {
             </Button>
           </form>
         </Box>
-        <Box>
+        <Box
+          sx={{
+            width: "100%",
+            overflow: "auto",
+          }}
+        >
           <textarea
             value={xmlString}
             rows={40}
@@ -575,13 +623,14 @@ const App = () => {
           <Box {...stylex.props(styles.graph)}>
             {fields
               ? fields.map(({ power, duration }, number) => {
-                  const height = power * 50;
+                  const powerPerCent = power / ftp;
+                  const height = powerPerCent * 50;
                   const width = parseFloat(duration || "0") * 6;
                   return (
                     <Box
                       key={number}
                       style={{
-                        background: getPowerPercentColor(power),
+                        background: getPowerPercentColor(powerPerCent),
                         width: `${width}px`,
                         height: `${height}px`,
                       }}

@@ -15,10 +15,26 @@ export const reducer = (state: State, action: Action): State => {
         ...state,
         fields: [...state.fields, payload.field],
       };
+    case "ADD_RAMP":
+      return {
+        ...state,
+        warmup: payload.warmup ? payload.warmup : state.warmup,
+        cooldown: payload.cooldown ? payload.cooldown : state.cooldown,
+      };
     case "DELETE":
       return {
         ...state,
         fields: state.fields.filter((_, index) => index !== payload.index),
+      };
+    case "DELETE_WARMUP":
+      return {
+        ...state,
+        warmup: undefined,
+      };
+    case "DELETE_COOLDOWN":
+      return {
+        ...state,
+        cooldown: undefined,
       };
     case "UPDATE_FIELD":
       return {
@@ -29,7 +45,7 @@ export const reducer = (state: State, action: Action): State => {
               const value = parseFloat(payload.value);
               return {
                 ...item,
-                power: powerConverter(value).from(powerUnit).to("percent"),
+                power: powerConverter(value).from(powerUnit).to("watts"),
                 powerToDisplay: value,
               };
             }

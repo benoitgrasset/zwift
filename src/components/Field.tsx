@@ -23,9 +23,10 @@ type Props = {
   index: number;
   powerUnit: PowerUnit;
   dispatch: React.Dispatch<Action>;
+  ftp: number;
 };
 
-const Field = ({ field, disabled, index, powerUnit, dispatch }: Props) => {
+const Field = ({ field, disabled, index, powerUnit, dispatch, ftp }: Props) => {
   const handleTextChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     field: IntervalField,
@@ -60,64 +61,68 @@ const Field = ({ field, disabled, index, powerUnit, dispatch }: Props) => {
   };
 
   return (
-    <Box
-      {...stylex.props(styles.interval)}
-      sx={{
-        background: field.selected
-          ? getPowerPercentColor(field.power)
-          : getPowerPercentLightColor(field.power),
-      }}
-    >
-      <Checkbox
-        checked={field.selected}
-        onChange={() => handleCheckboxChange(index)}
-      />
-      <span {...stylex.props(styles.field)}>
-        <InputLabel
-          {...stylex.props(styles.label)}
-          htmlFor={`duration-${index}`}
-        >
-          Duration (min)
-        </InputLabel>
-        <Input
-          id={`duration-${index}`}
-          {...stylex.props(styles.input)}
-          type="text"
-          inputMode="decimal"
-          value={field.duration}
-          onChange={(e) => handleTextChange(e, "duration", index)}
+    <div {...stylex.props(styles.intervalWrapper)}>
+      <Box
+        {...stylex.props(styles.interval)}
+        sx={{
+          background: field.selected
+            ? getPowerPercentColor(field.power / ftp)
+            : getPowerPercentLightColor(field.power / ftp),
+        }}
+      >
+        <Checkbox
+          checked={field.selected}
+          onChange={() => handleCheckboxChange(index)}
         />
-      </span>
-      <span {...stylex.props(styles.field)}>
-        <InputLabel {...stylex.props(styles.label)} htmlFor={`power-${index}`}>
-          Power ({mapPowerUnitToLabel[powerUnit]})
-        </InputLabel>
-        <Input
-          id={`power-${index}`}
-          {...stylex.props(styles.input)}
-          type="number"
-          inputMode="numeric"
-          value={field.powerToDisplay}
-          onChange={(e) => handleTextChange(e, "power", index)}
-        />
-      </span>
-      <span {...stylex.props(styles.field)}>
-        <InputLabel {...stylex.props(styles.label)} htmlFor={`pace-${index}`}>
-          Pace (RPM)
-        </InputLabel>
-        <Input
-          id={`pace-${index}`}
-          {...stylex.props(styles.input)}
-          type="number"
-          inputMode="numeric"
-          value={field.pace}
-          onChange={(e) => handleTextChange(e, "pace", index)}
-          sx={{
-            textAlign: "center",
-          }}
-        />
-      </span>
-      <span>
+        <span {...stylex.props(styles.field)}>
+          <InputLabel
+            {...stylex.props(styles.label)}
+            htmlFor={`duration-${index}`}
+          >
+            Duration (min)
+          </InputLabel>
+          <Input
+            id={`duration-${index}`}
+            {...stylex.props(styles.input)}
+            type="text"
+            inputMode="decimal"
+            value={field.duration}
+            onChange={(e) => handleTextChange(e, "duration", index)}
+          />
+        </span>
+        <span {...stylex.props(styles.field)}>
+          <InputLabel
+            {...stylex.props(styles.label)}
+            htmlFor={`power-${index}`}
+          >
+            Power ({mapPowerUnitToLabel[powerUnit]})
+          </InputLabel>
+          <Input
+            id={`power-${index}`}
+            {...stylex.props(styles.input)}
+            type="number"
+            inputMode="numeric"
+            value={field.powerToDisplay}
+            onChange={(e) => handleTextChange(e, "power", index)}
+            endAdornment={powerUnit === "percent" ? "%" : null}
+          />
+        </span>
+        <span {...stylex.props(styles.field)}>
+          <InputLabel {...stylex.props(styles.label)} htmlFor={`pace-${index}`}>
+            Pace (RPM)
+          </InputLabel>
+          <Input
+            id={`pace-${index}`}
+            {...stylex.props(styles.input)}
+            type="number"
+            inputMode="numeric"
+            value={field.pace}
+            onChange={(e) => handleTextChange(e, "pace", index)}
+            sx={{
+              textAlign: "center",
+            }}
+          />
+        </span>
         <Tooltip title="Delete Field">
           <IconButton
             aria-label="delete"
@@ -133,17 +138,22 @@ const Field = ({ field, disabled, index, powerUnit, dispatch }: Props) => {
             <MdDelete />
           </IconButton>
         </Tooltip>
-        <Tooltip title="Duplicate Field">
-          <IconButton
-            aria-label="duplicate"
-            onClick={() => duplicateFields(index)}
-            disabled={disabled}
-          >
-            <MdAdd />
-          </IconButton>
-        </Tooltip>
-      </span>
-    </Box>
+      </Box>
+
+      <Tooltip title="Duplicate Field">
+        <IconButton
+          aria-label="duplicate"
+          onClick={() => duplicateFields(index)}
+          disabled={disabled}
+          {...stylex.props(styles.duplicateButton)}
+          style={{
+            position: "absolute",
+          }}
+        >
+          <MdAdd />
+        </IconButton>
+      </Tooltip>
+    </div>
   );
 };
 

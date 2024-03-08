@@ -4,9 +4,8 @@ const height = "35px";
 
 export const styles = stylex.create({
   root: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center",
+    display: "grid",
+    gridTemplateColumns: "repeat(2, 1fr)",
     gap: "50px",
   },
   label: {
@@ -15,7 +14,7 @@ export const styles = stylex.create({
     display: "inline!important",
   },
   input: {
-    width: "55px",
+    width: "60px",
     height,
     boxSizing: "border-box",
     textAlign: "center",
@@ -59,11 +58,20 @@ export const styles = stylex.create({
     position: "relative",
   },
   graph: {
-    display: "flex",
+    display: "inline-flex",
     gap: "5px",
     alignItems: "baseline",
+    width: "100%",
+    overflow: "auto",
   },
   legend: {
     margin: "0 0 10px 0",
+  },
+  intervalWrapper: {
+    position: "relative",
+  },
+  duplicateButton: {
+    right: "-35px",
+    top: "-25px",
   },
 });

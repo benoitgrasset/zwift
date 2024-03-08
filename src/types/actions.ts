@@ -1,4 +1,4 @@
-import { IField, IntervalField, PowerUnit } from ".";
+import { IField, IntervalField, PowerUnit, Ramp } from ".";
 
 type AddAction = {
   type: "ADD";
@@ -7,11 +7,29 @@ type AddAction = {
   };
 };
 
+type AddRampAction = {
+  type: "ADD_RAMP";
+  payload: {
+    warmup?: Ramp;
+    cooldown?: Ramp;
+  };
+};
+
 type DeleteAction = {
   type: "DELETE";
   payload: {
     index: number;
   };
+};
+
+type DeleteWarmupAction = {
+  type: "DELETE_WARMUP";
+  payload: undefined;
+};
+
+type DeleteCooldownAction = {
+  type: "DELETE_COOLDOWN";
+  payload: undefined;
 };
 
 type UpdateAction = {
@@ -82,4 +100,7 @@ export type Action =
   | TogglePowerUnitAction
   | UpdateWeightAction
   | UpdateFtpAction
-  | DuplicateAction;
+  | AddRampAction
+  | DuplicateAction
+  | DeleteWarmupAction
+  | DeleteCooldownAction;
