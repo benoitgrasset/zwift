@@ -7,7 +7,8 @@ import {
   Tooltip,
 } from "@mui/material";
 import * as stylex from "@stylexjs/stylex";
-import { MdAdd, MdDelete } from "react-icons/md";
+import { useCallback } from "react";
+import { MdAdd } from "react-icons/md";
 import "../App.css";
 import { styles } from "../index.styles";
 import { Action, IField, IntervalField, PowerUnit } from "../types";
@@ -16,6 +17,8 @@ import {
   getPowerPercentLightColor,
 } from "../utils/colors";
 import { mapPowerUnitToLabel } from "../utils/dictionary";
+import DeleteButton from "./DeleteButton";
+import DurationTextField from "./DurationTextField";
 
 type Props = {
   field: IField;
@@ -27,20 +30,26 @@ type Props = {
 };
 
 const Field = ({ field, disabled, index, powerUnit, dispatch, ftp }: Props) => {
-  const handleTextChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    field: IntervalField,
-    index: number
-  ) => {
-    dispatch({
-      type: "UPDATE_FIELD",
-      payload: {
-        index,
-        value: event.target.value,
-        field,
-      },
-    });
-  };
+  const handleTextChange = useCallback(
+    (value: number, field: IntervalField, index: number) => {
+      dispatch({
+        type: "UPDATE_FIELD",
+        payload: {
+          index,
+          value,
+          field,
+        },
+      });
+    },
+    [dispatch]
+  );
+
+  const handleDurationChange = useCallback(
+    (value: number) => {
+      handleTextChange(value, "duration", index);
+    },
+    [handleTextChange, index]
+  );
 
   const handleCheckboxChange = (index: number) => {
     dispatch({
@@ -79,15 +88,12 @@ const Field = ({ field, disabled, index, powerUnit, dispatch, ftp }: Props) => {
             {...stylex.props(styles.label)}
             htmlFor={`duration-${index}`}
           >
-            Duration (min)
+            Duration
           </InputLabel>
-          <Input
+          <DurationTextField
             id={`duration-${index}`}
-            {...stylex.props(styles.input)}
-            type="text"
-            inputMode="decimal"
             value={field.duration}
-            onChange={(e) => handleTextChange(e, "duration", index)}
+            handleChange={handleDurationChange}
           />
         </span>
         <span {...stylex.props(styles.field)}>
@@ -103,7 +109,9 @@ const Field = ({ field, disabled, index, powerUnit, dispatch, ftp }: Props) => {
             type="number"
             inputMode="numeric"
             value={field.powerToDisplay}
-            onChange={(e) => handleTextChange(e, "power", index)}
+            onChange={(e) =>
+              handleTextChange(parseFloat(e.target.value), "power", index)
+            }
             endAdornment={powerUnit === "percent" ? "%" : null}
           />
         </span>
@@ -117,27 +125,18 @@ const Field = ({ field, disabled, index, powerUnit, dispatch, ftp }: Props) => {
             type="number"
             inputMode="numeric"
             value={field.pace}
-            onChange={(e) => handleTextChange(e, "pace", index)}
+            onChange={(e) =>
+              handleTextChange(parseFloat(e.target.value), "pace", index)
+            }
             sx={{
               textAlign: "center",
             }}
           />
         </span>
-        <Tooltip title="Delete Field">
-          <IconButton
-            aria-label="delete"
-            onClick={() =>
-              dispatch({
-                type: "DELETE",
-                payload: {
-                  index,
-                },
-              })
-            }
-          >
-            <MdDelete />
-          </IconButton>
-        </Tooltip>
+        <DeleteButton
+          tooltip="Delete Field"
+          onClick={() => dispatch({ type: "DELETE", payload: { index } })}
+        />
       </Box>
 
       <Tooltip title="Duplicate Field">

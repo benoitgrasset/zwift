@@ -37,7 +37,7 @@ type UpdateAction = {
   payload: {
     index: number;
     field: IntervalField;
-    value: string;
+    value: number;
   };
 };
 

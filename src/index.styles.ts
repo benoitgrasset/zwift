@@ -19,6 +19,10 @@ export const styles = stylex.create({
     boxSizing: "border-box",
     textAlign: "center",
   },
+  endAdornment: {
+    marginLeft: "3px",
+    color: "rgba(0, 0, 0, 0.54)",
+  },
   submit: {
     height: "35px",
   },

@@ -1,31 +1,22 @@
-import {
-  Box,
-  Button,
-  Checkbox,
-  IconButton,
-  Input,
-  InputLabel,
-  ToggleButton,
-  ToggleButtonGroup,
-  Tooltip,
-} from "@mui/material";
+import { Box, Button, Checkbox, Input, InputLabel } from "@mui/material";
 import * as stylex from "@stylexjs/stylex";
 import { useEffect, useReducer, useState } from "react";
-import { MdDelete, MdDownload, MdPreview, MdUpload } from "react-icons/md";
+import { MdDownload, MdPreview } from "react-icons/md";
 import "./App.css";
 import ActionSelector from "./components/ActionSelector";
+import Cooldown from "./components/Cooldown";
 import Field from "./components/Field";
+import Graph from "./components/Graph";
 import Legend from "./components/Legend";
+import UnitsSelector from "./components/UnitsSelector";
+import UploadFile from "./components/UploadFile";
+import Warmup from "./components/Warmup";
 import { styles } from "./index.styles";
 import { reducer } from "./reducer";
 import { IField, PowerUnit, Ramp } from "./types";
 import { createXMLString, downLoadFile, parseXMLFile } from "./utils";
-import { colorsByPower, getPowerPercentColor } from "./utils/colors";
 import converter from "./utils/convert";
-import { mapPowerUnitToLabel } from "./utils/dictionary";
 import { getTrainingLoad } from "./utils/metrics";
-
-const powerUnits: PowerUnit[] = ["watts", "percent", "wattsByKg"];
 
 const localStorageKeyFTP = "FTP";
 const localStorageKeyWeight = "weight";
@@ -33,11 +24,12 @@ const localStorageKeyPowerUnit = "powerUnit";
 
 const _ftp = parseInt(localStorage.getItem(localStorageKeyFTP) || "316");
 const _weight = parseInt(localStorage.getItem(localStorageKeyWeight) || "80");
-const _duration = "3";
+const _duration = 60;
 const _power = 180;
 const _pace = 80;
 const _powerLow = 80;
 const _powerHigh = 237;
+
 const _field: IField = {
   duration: _duration,
   power: _power,
@@ -46,14 +38,14 @@ const _field: IField = {
   selected: false,
 };
 const _warmup: Ramp = {
-  duration: "5",
+  duration: 60,
   pace: _pace,
   PowerLow: _powerLow,
   PowerHigh: _powerHigh,
   selected: false,
 };
 const _cooldown: Ramp = {
-  duration: "5",
+  duration: 60,
   pace: _pace,
   PowerLow: _powerLow,
   PowerHigh: _powerHigh,
@@ -80,17 +72,8 @@ const initialState: State = {
 
 const todayDate = new Date().toLocaleDateString().replaceAll("/", "-");
 
-/**
- *
- * @param duration string in minutes
- * @returns number in seconds
- */
-const getDuration = (duration: string) => {
-  return parseFloat(duration) * 60;
-};
-
-const getDurationFromFile = (duration: string) => {
-  return (parseFloat(duration) / 60).toFixed(1);
+const getDurationFromFile = (duration: number): number => {
+  return duration / 60;
 };
 
 const App = () => {
@@ -132,7 +115,7 @@ const App = () => {
       return {
         ...field,
         power: getPowerToFile(field.powerToDisplay),
-        duration: getDuration(field.duration || "0"),
+        duration: field.duration,
       };
     });
     const [finalWarmup, finalCooldown] = [warmup, cooldown].map((ramp) => {
@@ -141,7 +124,7 @@ const App = () => {
         ...ramp,
         PowerLow: getPowerToFile(ramp.PowerLow),
         PowerHigh: getPowerToFile(ramp.PowerHigh),
-        duration: getDuration(ramp.duration).toString(),
+        duration: ramp.duration,
       };
     });
 
@@ -239,14 +222,14 @@ const App = () => {
 
   const duration =
     fields.reduce((acc, field) => {
-      return acc + parseFloat(field.duration || "0");
+      return acc + field.duration;
     }, 0) +
-    parseFloat(warmup?.duration || "0") +
-    parseFloat(cooldown?.duration || "0");
+    (warmup?.duration || 0) +
+    (cooldown?.duration || 0);
 
   const trainingLoad = fields.reduce((acc, field) => {
     const power = (field.power * ftp) / 100;
-    return acc + getTrainingLoad(power, parseFloat(field.duration || "0"), ftp);
+    return acc + getTrainingLoad(power, field.duration, ftp);
   }, 0);
 
   const handleCheckSelectAll = () => {
@@ -260,23 +243,10 @@ const App = () => {
         <Box>
           <Legend ftp={ftp} {...stylex.props(styles.legend)} />
           <Box {...stylex.props(styles.params)}>
-            <ToggleButtonGroup
-              value={powerUnit}
-              exclusive
-              onChange={togglePowerUnit}
-              aria-label="Power unit"
-            >
-              <ToggleButton value={powerUnits[0]} aria-label="Watts">
-                {mapPowerUnitToLabel[powerUnits[0]]}
-              </ToggleButton>
-              <ToggleButton value={powerUnits[1]} aria-label="FTP %">
-                {mapPowerUnitToLabel[powerUnits[1]]}
-              </ToggleButton>
-              <ToggleButton value={powerUnits[2]} aria-label="FTP/kg">
-                {mapPowerUnitToLabel[powerUnits[2]]}
-              </ToggleButton>
-            </ToggleButtonGroup>
-
+            <UnitsSelector
+              powerUnit={powerUnit}
+              togglePowerUnit={togglePowerUnit}
+            />
             <Box gap={2} display="flex">
               <span>
                 <InputLabel htmlFor="ftp" {...stylex.props(styles.label)}>
@@ -346,132 +316,17 @@ const App = () => {
             >
               Preview
             </Button>
-            <input
-              accept=".zwo"
-              id="button-file"
-              type="file"
-              hidden
-              onChange={loadFile}
-            />
-            <label htmlFor="button-file">
-              <Button
-                variant="contained"
-                color="primary"
-                {...stylex.props(styles.button)}
-                startIcon={<MdUpload />}
-                component="span"
-              >
-                Upload
-              </Button>
-            </label>
+            <UploadFile loadFile={loadFile} />
           </Box>
 
           <form noValidate onSubmit={handleSubmit}>
             {warmup && (
-              <Box
-                {...stylex.props(styles.interval)}
-                sx={{
-                  background: colorsByPower.warmup,
-                }}
-              >
-                <span {...stylex.props(styles.field)}>
-                  <InputLabel
-                    {...stylex.props(styles.label)}
-                    htmlFor={`warmup-duration`}
-                  >
-                    Duration (min)
-                  </InputLabel>
-                  <Input
-                    id={`warmup-duration`}
-                    {...stylex.props(styles.input)}
-                    type="text"
-                    inputMode="decimal"
-                    value={warmup.duration}
-                    onChange={(e) =>
-                      setWarmup((prevState) => ({
-                        ...prevState!,
-                        duration: e.target.value,
-                      }))
-                    }
-                  />
-                </span>
-                <span {...stylex.props(styles.field)}>
-                  <InputLabel
-                    {...stylex.props(styles.label)}
-                    htmlFor={`warmup-power-low`}
-                  >
-                    Power Low ({mapPowerUnitToLabel[powerUnit]})
-                  </InputLabel>
-                  <Input
-                    id={`warmup-power-low`}
-                    {...stylex.props(styles.input)}
-                    type="number"
-                    inputMode="numeric"
-                    value={warmup.PowerLow}
-                    onChange={(e) =>
-                      setWarmup((prevState) => ({
-                        ...prevState!,
-                        PowerLow: parseFloat(e.target.value),
-                      }))
-                    }
-                  />
-                </span>
-                <span {...stylex.props(styles.field)}>
-                  <InputLabel
-                    {...stylex.props(styles.label)}
-                    htmlFor={`warmup-power-high`}
-                  >
-                    Power High ({mapPowerUnitToLabel[powerUnit]})
-                  </InputLabel>
-                  <Input
-                    id={`warmup-power-high`}
-                    {...stylex.props(styles.input)}
-                    type="number"
-                    inputMode="numeric"
-                    value={warmup.PowerHigh}
-                    onChange={(e) =>
-                      setWarmup((prevState) => ({
-                        ...prevState!,
-                        PowerLow: parseFloat(e.target.value),
-                      }))
-                    }
-                  />
-                </span>
-                <span {...stylex.props(styles.field)}>
-                  <InputLabel
-                    {...stylex.props(styles.label)}
-                    htmlFor={`warmup-pace`}
-                  >
-                    Pace (RPM)
-                  </InputLabel>
-                  <Input
-                    id={`warmup-pace`}
-                    {...stylex.props(styles.input)}
-                    type="number"
-                    inputMode="numeric"
-                    value={warmup.pace}
-                    onChange={(e) =>
-                      setWarmup((prevState) => ({
-                        ...prevState!,
-                        pace: parseFloat(e.target.value),
-                      }))
-                    }
-                    sx={{
-                      textAlign: "center",
-                    }}
-                  />
-                </span>
-                <Tooltip title="Delete Warmup">
-                  <IconButton
-                    aria-label="delete"
-                    onClick={() =>
-                      dispatch({ type: "DELETE_WARMUP", payload: undefined })
-                    }
-                  >
-                    <MdDelete />
-                  </IconButton>
-                </Tooltip>
-              </Box>
+              <Warmup
+                dispatch={dispatch}
+                powerUnit={powerUnit}
+                setWarmup={setWarmup}
+                warmup={warmup}
+              />
             )}
             {fields.map((field, index) => (
               <Field
@@ -485,110 +340,12 @@ const App = () => {
               />
             ))}
             {cooldown && (
-              <Box
-                {...stylex.props(styles.interval)}
-                sx={{
-                  background: colorsByPower.cooldown,
-                }}
-              >
-                <span {...stylex.props(styles.field)}>
-                  <InputLabel
-                    {...stylex.props(styles.label)}
-                    htmlFor={`cooldown-duration`}
-                  >
-                    Duration (min)
-                  </InputLabel>
-                  <Input
-                    id={`cooldown-duration`}
-                    {...stylex.props(styles.input)}
-                    type="text"
-                    inputMode="decimal"
-                    value={cooldown.duration}
-                    onChange={(e) =>
-                      setCooldown((prevState) => ({
-                        ...prevState!,
-                        duration: e.target.value,
-                      }))
-                    }
-                  />
-                </span>
-                <span {...stylex.props(styles.field)}>
-                  <InputLabel
-                    {...stylex.props(styles.label)}
-                    htmlFor={`cooldown-power-high`}
-                  >
-                    Power High ({mapPowerUnitToLabel[powerUnit]})
-                  </InputLabel>
-                  <Input
-                    id={`cooldown-power-high`}
-                    {...stylex.props(styles.input)}
-                    type="number"
-                    inputMode="numeric"
-                    value={cooldown.PowerHigh}
-                    onChange={(e) =>
-                      setCooldown((prevState) => ({
-                        ...prevState!,
-                        PowerLow: parseFloat(e.target.value),
-                      }))
-                    }
-                  />
-                </span>
-                <span {...stylex.props(styles.field)}>
-                  <InputLabel
-                    {...stylex.props(styles.label)}
-                    htmlFor={`cooldown-power-low`}
-                  >
-                    Power Low ({mapPowerUnitToLabel[powerUnit]})
-                  </InputLabel>
-                  <Input
-                    id={`cooldown-power-low`}
-                    {...stylex.props(styles.input)}
-                    type="number"
-                    inputMode="numeric"
-                    value={cooldown.PowerLow}
-                    onChange={(e) =>
-                      setCooldown((prevState) => ({
-                        ...prevState!,
-                        PowerLow: parseFloat(e.target.value),
-                      }))
-                    }
-                  />
-                </span>
-                <span {...stylex.props(styles.field)}>
-                  <InputLabel
-                    {...stylex.props(styles.label)}
-                    htmlFor={`cooldown-pace`}
-                  >
-                    Pace (RPM)
-                  </InputLabel>
-                  <Input
-                    id={`cooldown-pace`}
-                    {...stylex.props(styles.input)}
-                    type="number"
-                    inputMode="numeric"
-                    value={cooldown.pace}
-                    onChange={(e) =>
-                      setCooldown((prevState) => ({
-                        ...prevState!,
-                        pace: parseFloat(e.target.value),
-                      }))
-                    }
-                    sx={{
-                      textAlign: "center",
-                    }}
-                  />
-                </span>
-                <Tooltip title="Delete Cooldown">
-                  <IconButton
-                    aria-label="delete"
-                    onClick={() =>
-                      dispatch({ type: "DELETE_COOLDOWN", payload: undefined })
-                    }
-                  >
-                    <MdDelete />
-                  </IconButton>
-                </Tooltip>
-              </Box>
+              <Cooldown
+                cooldown={cooldown}
+                dispatch={dispatch}
+                powerUnit={powerUnit}
+                setCooldown={setCooldown}
+              />
             )}
             <Box display="flex" gap={2} justifyContent="center">
               <span>Total Duration: {duration.toFixed(1)} min</span>
@@ -620,25 +377,7 @@ const App = () => {
             cols={70}
             {...stylex.props(styles.textArea)}
           />
-          <Box {...stylex.props(styles.graph)}>
-            {fields
-              ? fields.map(({ power, duration }, number) => {
-                  const powerPerCent = power / ftp;
-                  const height = powerPerCent * 50;
-                  const width = parseFloat(duration || "0") * 6;
-                  return (
-                    <Box
-                      key={number}
-                      style={{
-                        background: getPowerPercentColor(powerPerCent),
-                        width: `${width}px`,
-                        height: `${height}px`,
-                      }}
-                    />
-                  );
-                })
-              : "No workout loaded"}
-          </Box>
+          <Graph fields={fields} ftp={ftp} />
         </Box>
       </Box>
     </>

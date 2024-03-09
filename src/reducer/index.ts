@@ -42,7 +42,7 @@ export const reducer = (state: State, action: Action): State => {
         fields: state.fields.map((item, i) => {
           if (i === payload.index) {
             if (payload.field === "power") {
-              const value = parseFloat(payload.value);
+              const value = payload.value;
               return {
                 ...item,
                 power: powerConverter(value).from(powerUnit).to("watts"),

@@ -5,7 +5,8 @@ export type FinalField = {
 };
 
 export type IField = {
-  duration: string | undefined;
+  /** duration in seconds */
+  duration: number;
   /** power in Watts */
   power: number;
   /** power in the unit chosen */
@@ -15,7 +16,7 @@ export type IField = {
 };
 
 export type Ramp = {
-  duration: string;
+  duration: number;
   pace: number;
   PowerLow: number;
   PowerHigh: number;

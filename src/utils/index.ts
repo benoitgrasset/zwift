@@ -87,7 +87,7 @@ export const parseXMLFile = (xmlString: string) => {
   const cooldownElement = xmlDoc.getElementsByTagName("Cooldown");
 
   const intervals = Array.from(intervalsElement).map((interval) => {
-    const duration = interval.getAttribute("Duration") || "3";
+    const duration = parseFloat(interval.getAttribute("Duration") || "60");
     const power = parseFloat(interval.getAttribute("Power") || "180");
     const pace = parseFloat(interval.getAttribute("pace") || "80");
     return { duration, power, pace, selected: false };
@@ -95,7 +95,7 @@ export const parseXMLFile = (xmlString: string) => {
   const warmup =
     warmupElement &&
     Array.from(warmupElement).map((interval) => {
-      const duration = interval.getAttribute("Duration") || "3";
+      const duration = parseFloat(interval.getAttribute("Duration") || "60");
       const PowerLow = parseFloat(interval.getAttribute("PowerLow") || "80");
       const PowerHigh = parseFloat(interval.getAttribute("PowerHigh") || "237");
       const pace = parseFloat(interval.getAttribute("pace") || "80");
@@ -104,7 +104,7 @@ export const parseXMLFile = (xmlString: string) => {
   const cooldown =
     cooldownElement &&
     Array.from(cooldownElement).map((interval) => {
-      const duration = interval.getAttribute("Duration") || "3";
+      const duration = parseFloat(interval.getAttribute("Duration") || "60");
       const PowerLow = parseFloat(interval.getAttribute("PowerLow") || "80");
       const PowerHigh = parseFloat(interval.getAttribute("PowerHigh") || "237");
       const pace = parseFloat(interval.getAttribute("pace") || "80");
