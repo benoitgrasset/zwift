@@ -75,7 +75,12 @@ export const styles = stylex.create({
     position: "relative",
   },
   duplicateButton: {
-    right: "-35px",
+    position: "absolute",
+    right: "-75px",
     top: "-25px",
+  },
+  nbRepetitions: {
+    width: "35px",
+    height: "20px",
   },
 });

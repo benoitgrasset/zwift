@@ -1,6 +1,7 @@
 /* eslint-disable no-case-declarations */
 import { State } from "../App";
 import { Action } from "../types";
+import { duplicateArray } from "../utils/array";
 import converter from "../utils/convert";
 
 export const reducer = (state: State, action: Action): State => {
@@ -74,6 +75,7 @@ export const reducer = (state: State, action: Action): State => {
         })),
       };
     case "DUPLICATE":
+      const nbRepetitions = payload.nbRepetitions;
       const selectedFields = state.fields
         .filter((field) => field.selected)
         .map((field) => {
@@ -87,7 +89,7 @@ export const reducer = (state: State, action: Action): State => {
         fields: [...state.fields].toSpliced(
           payload.index + 1,
           0,
-          ...selectedFields
+          ...duplicateArray(selectedFields, nbRepetitions)
         ),
       };
     case "TOGGLE_POWER_UNIT":

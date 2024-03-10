@@ -66,6 +66,7 @@ type DuplicateAction = {
   type: "DUPLICATE";
   payload: {
     index: number;
+    nbRepetitions: number;
   };
 };
 

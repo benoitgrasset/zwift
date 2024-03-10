@@ -7,7 +7,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import * as stylex from "@stylexjs/stylex";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { MdAdd } from "react-icons/md";
 import "../App.css";
 import { styles } from "../index.styles";
@@ -30,6 +30,8 @@ type Props = {
 };
 
 const Field = ({ field, disabled, index, powerUnit, dispatch, ftp }: Props) => {
+  const [nbRepetitions, setNbRepetitions] = useState(1);
+
   const handleTextChange = useCallback(
     (value: number, field: IntervalField, index: number) => {
       dispatch({
@@ -44,6 +46,9 @@ const Field = ({ field, disabled, index, powerUnit, dispatch, ftp }: Props) => {
     [dispatch]
   );
 
+  // useCallback is used to avoid creating a new function each time the component is rendered - it's a performance optimization
+  // https://reactjs.org/docs/hooks-reference.html#usecallback
+  // handleTextChange is in the dependency array
   const handleDurationChange = useCallback(
     (value: number) => {
       handleTextChange(value, "duration", index);
@@ -65,6 +70,7 @@ const Field = ({ field, disabled, index, powerUnit, dispatch, ftp }: Props) => {
       type: "DUPLICATE",
       payload: {
         index,
+        nbRepetitions,
       },
     });
   };
@@ -139,19 +145,23 @@ const Field = ({ field, disabled, index, powerUnit, dispatch, ftp }: Props) => {
         />
       </Box>
 
-      <Tooltip title="Duplicate Field">
-        <IconButton
-          aria-label="duplicate"
-          onClick={() => duplicateFields(index)}
-          disabled={disabled}
-          {...stylex.props(styles.duplicateButton)}
-          style={{
-            position: "absolute",
-          }}
-        >
-          <MdAdd />
-        </IconButton>
-      </Tooltip>
+      <span {...stylex.props(styles.duplicateButton)}>
+        <Tooltip title="Duplicate Field">
+          <IconButton
+            aria-label="duplicate"
+            onClick={() => duplicateFields(index)}
+            disabled={disabled}
+          >
+            <MdAdd />
+          </IconButton>
+        </Tooltip>
+        <input
+          type="number"
+          value={nbRepetitions}
+          onChange={(e) => setNbRepetitions(parseInt(e.target.value))}
+          {...stylex.props(styles.nbRepetitions)}
+        />
+      </span>
     </div>
   );
 };
