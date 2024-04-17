@@ -1,3 +1,4 @@
+import { useDraggable } from "@dnd-kit/core";
 import {
   Box,
   Checkbox,
@@ -75,8 +76,23 @@ const Field = ({ field, disabled, index, powerUnit, dispatch, ftp }: Props) => {
     });
   };
 
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: `draggable ${index}`,
+  });
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      }
+    : undefined;
+
   return (
-    <div {...stylex.props(styles.intervalWrapper)}>
+    <div
+      {...stylex.props(styles.intervalWrapper)}
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+    >
       <Box
         {...stylex.props(styles.interval)}
         sx={{

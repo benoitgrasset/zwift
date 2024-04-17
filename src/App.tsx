@@ -1,3 +1,4 @@
+import { DndContext, DragEndEvent, useDroppable } from "@dnd-kit/core";
 import { Box, Button, Checkbox, Input, InputLabel } from "@mui/material";
 import * as stylex from "@stylexjs/stylex";
 import { useEffect, useReducer, useState } from "react";
@@ -81,6 +82,13 @@ const App = () => {
   const [warmup, setWarmup] = useState<Ramp>(_warmup);
   const [cooldown, setCooldown] = useState<Ramp>(_cooldown);
   const [xmlString, setXmlString] = useState("");
+  const [isDropped, setIsDropped] = useState(false);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    if (event.over && event.over.id === "droppable") {
+      setIsDropped(true);
+    }
+  };
 
   const { fields, powerUnit, weight, ftp } = state;
 
@@ -236,6 +244,14 @@ const App = () => {
     dispatch({ type: "SELECT_ALL", payload: { checked } });
   };
 
+  const { isOver, setNodeRef } = useDroppable({
+    id: "droppable",
+  });
+
+  const style = {
+    color: isOver ? "green" : undefined,
+  };
+
   return (
     <>
       <h1>Zwift ZWO Editor</h1>
@@ -319,51 +335,59 @@ const App = () => {
             <UploadFile loadFile={loadFile} />
           </Box>
 
-          <form noValidate onSubmit={handleSubmit}>
-            {warmup && (
-              <Warmup
-                dispatch={dispatch}
-                powerUnit={powerUnit}
-                setWarmup={setWarmup}
-                warmup={warmup}
-              />
-            )}
-            {fields.map((field, index) => (
-              <Field
-                key={index}
-                index={index}
-                field={field}
-                powerUnit={powerUnit}
-                dispatch={dispatch}
-                disabled={!fields.some((field) => field.selected)}
-                ftp={ftp}
-              />
-            ))}
-            {cooldown && (
-              <Cooldown
-                cooldown={cooldown}
-                dispatch={dispatch}
-                powerUnit={powerUnit}
-                setCooldown={setCooldown}
-              />
-            )}
-            <Box display="flex" gap={2} justifyContent="center">
-              <span>Total Duration: {duration.toFixed(1)} min</span>
-              <span>Training Load: {trainingLoad.toFixed(1)}</span>
-            </Box>
-            <Button
-              type="submit"
-              {...stylex.props(styles.submit)}
-              variant="contained"
-              color="primary"
-              startIcon={<MdDownload />}
-              sx={{
-                marginTop: "25px",
-              }}
+          <DndContext onDragEnd={handleDragEnd}>
+            <form
+              noValidate
+              onSubmit={handleSubmit}
+              ref={setNodeRef}
+              style={style}
             >
-              Download
-            </Button>
-          </form>
+              {warmup && (
+                <Warmup
+                  dispatch={dispatch}
+                  powerUnit={powerUnit}
+                  setWarmup={setWarmup}
+                  warmup={warmup}
+                />
+              )}
+              {fields.map((field, index) => (
+                <Field
+                  key={index}
+                  index={index}
+                  field={field}
+                  powerUnit={powerUnit}
+                  dispatch={dispatch}
+                  disabled={!fields.some((field) => field.selected)}
+                  ftp={ftp}
+                />
+              ))}
+              {isDropped ? "Drag me" : "Drop here"}
+              {cooldown && (
+                <Cooldown
+                  cooldown={cooldown}
+                  dispatch={dispatch}
+                  powerUnit={powerUnit}
+                  setCooldown={setCooldown}
+                />
+              )}
+              <Box display="flex" gap={2} justifyContent="center">
+                <span>Total Duration: {duration.toFixed(1)} min</span>
+                <span>Training Load: {trainingLoad.toFixed(1)}</span>
+              </Box>
+              <Button
+                type="submit"
+                {...stylex.props(styles.submit)}
+                variant="contained"
+                color="primary"
+                startIcon={<MdDownload />}
+                sx={{
+                  marginTop: "25px",
+                }}
+              >
+                Download
+              </Button>
+            </form>
+          </DndContext>
         </Box>
         <Box
           sx={{
